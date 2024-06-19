@@ -8,7 +8,11 @@ wss.on('connection', (ws: WebSocket) => {
   console.log("New Websocket client connection is eshtablished!");
 
   ws.on('message', (message: string) => {
-    console.log(message);
+    const data = message.toString();
+    console.log(data);
+
+    // handle the types of message 
+
     ws.send(`Server received your message: ${message}`);
   });
 

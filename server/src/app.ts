@@ -5,7 +5,7 @@ import { PingController } from "./controllers/PingController";
 import * as controllers from './controllers';
 import IndexController from "./controllers/IndexController";
 import { Controller } from "@overnightjs/core/lib/decorators/types";
-import { wss } from "./websocket/signalling";
+import { wss } from "./signalling/websocket";
 
 class App extends Server {
 
