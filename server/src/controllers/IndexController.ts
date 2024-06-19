@@ -1,13 +1,18 @@
-import { NextFunction, Request, Response, Router } from "express";
+import { Controller, Get } from "@overnightjs/core";
+import { Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import Logger from 'jet-logger';
+@Controller('/')
+class IndexController {
 
-export const IndexController: Router = Router();
-
-IndexController.get("/", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    res.status(200).send({ data: "Hello from the Server Side!"})
-  } catch(error) {
-    next(error);
+  @Get()
+  private getAll(req: Request, res: Response) {
+    try {
+      return res.status(StatusCodes.OK).send({ data: "Hello from the Server Side!"});
+    } catch(err) {
+      Logger.err(err, true);
+    }
   }
-})
+}
 
-
+export default IndexController;
