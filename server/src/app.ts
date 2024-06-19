@@ -5,11 +5,11 @@ import { PingController } from "./controllers/PingController";
 import * as controllers from './controllers';
 import IndexController from "./controllers/IndexController";
 import { Controller } from "@overnightjs/core/lib/decorators/types";
-
+import { wss } from "./websocket/signalling";
 
 class App extends Server {
 
-  private readonly SERVER_START_MSG = "Demo server started on port";
+  private readonly SERVER_START_MSG = "Demo server started on port: ";
   private readonly DEV_MSG = 'Express Server is running in development mode. ' +
   'No front-end content is being served.';
 
@@ -17,8 +17,8 @@ class App extends Server {
     super(true);
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({extended: true}));
-    super.addControllers(new PingController());
     super.addControllers(new IndexController());
+    super.addControllers(new PingController());
 
     if (process.env.NODE_ENV !== 'production') {
       console.log('Starting server in development mode');
@@ -42,8 +42,15 @@ class App extends Server {
   }
 
   public start(port: number): void {
-    this.app.listen(port, () => {
+    const server  =this.app.listen(port, () => {
       Logger.imp(this.SERVER_START_MSG + port)
+    })
+
+    // change protocol only when requested
+    server.on('upgrade', (request, socket, head: Buffer) => {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+     })
     })
   }
 }
