@@ -1,6 +1,8 @@
 import { useRef } from "react";
-import { isValidJSON } from "./helper";
+import { handleMessage, isValidJSON } from "./helper";
 import { useEffect } from "react";
+import { useAtom, useAtomValue } from "jotai";
+import { usernameAtom, wsDataAtom, defaultWsData } from "@/state/atoms";
 
 export const sendMessage = (conn: WebSocket, user: string, message: object) => {
   conn.send(JSON.stringify({
@@ -10,6 +12,8 @@ export const sendMessage = (conn: WebSocket, user: string, message: object) => {
 
 const useWebSocket = ({ port } : { port: number}) => {
   const websocket = useRef<WebSocket | null>(null);
+  const [wsData, setWsData] = useAtom(wsDataAtom);
+  const username = useAtomValue(usernameAtom);
 
 
   useEffect(() => {
@@ -17,21 +21,21 @@ const useWebSocket = ({ port } : { port: number}) => {
 
     ws.onopen = () => {
       console.log('Websocket connection is eshtablished!!');
+      setWsData({ ...defaultWsData, error: false });
     }
 
     ws.onmessage = (message) => {
       // message.data can be string or JSON -> message is a event
-
       const data = isValidJSON(message?.data) ? JSON.parse(message?.data) : message?.data;
-      console.log(data);  
-
+      handleMessage(username, data, setWsData);  
     }
 
     websocket.current = ws;
 
     ws.onerror = (error) => {
       // close the connection
-      console.log(error);
+      setWsData({ ...defaultWsData, error: true })
+      console.log(error, 'websocke error!!!!!!!!!!!!!!!!');
     }
 
     return () => ws.close();
