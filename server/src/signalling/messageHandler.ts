@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { handleLogin, handleOffer } from "./utils";
+import { handleAnswer, handleIceCandidate, handleLogin, handleOffer } from "./utils";
 
 export enum MESSAGE_TYPES {
   LOGIN = "LOGIN",
@@ -21,12 +21,17 @@ interface Connections {
   [key: string]: WebSocket
 }
 
+export interface ExtWebSocket extends WebSocket {
+  name: string;
+}
+
 export const connections: Connections = {};
 
 
 
-export const messageHandler = (conn: WebSocket, message: messageDataI) => {
+export const messageHandler = (conn: ExtWebSocket, message: messageDataI) => {
   const user = message.user;
+  console.log(user, message.type);
 
   switch(message.type) {
 
@@ -35,15 +40,15 @@ export const messageHandler = (conn: WebSocket, message: messageDataI) => {
       break;
     }
     case MESSAGE_TYPES.OFFER: {
-      handleOffer(conn, message)
+      handleOffer(conn, user, message)
       break;
     }
     case MESSAGE_TYPES.ANSWER: {
-
+      handleAnswer(conn, user, message)
       break;
     }
     case MESSAGE_TYPES.ICE_CANDIDATE: {
-
+      handleIceCandidate(conn, user, message);
       break;
     }
     case MESSAGE_TYPES.LEAVE: {

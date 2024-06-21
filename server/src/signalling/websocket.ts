@@ -1,16 +1,13 @@
 import ws, { WebSocket } from 'ws';
-import { messageDataI, messageHandler } from './messageHandler';
+import { ExtWebSocket, messageDataI, messageHandler } from './messageHandler';
 
 export const wss = new ws.Server({ noServer: true });
 
-wss.on('connection', (ws: WebSocket) => {
+wss.on('connection', (ws: ExtWebSocket) => {
   console.log("New Websocket client connection is eshtablished!");
 
   ws.on('message', (message: string) => {
     let data: string | messageDataI = message.toString();
-
-    console.log(data);
-
     // handle the types of message 
     try {
       data = JSON.parse(data);
@@ -21,7 +18,7 @@ wss.on('connection', (ws: WebSocket) => {
       console.log('not a JSON data!')
     }
 
-    ws.send(`Server received your message: ${message}`);
+    ws.send(`Server received your message`);
   });
 
   ws.on('close', () => {

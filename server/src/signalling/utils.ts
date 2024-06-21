@@ -1,11 +1,12 @@
 import { WebSocket } from "ws";
-import { MESSAGE_TYPES, connections } from "./messageHandler"
+import { ExtWebSocket, MESSAGE_TYPES, connections } from "./messageHandler"
+
 
 export const sendMessageClient = (conn: WebSocket, message: object) => {
   conn.send(JSON.stringify(message));
 }
 
-export const handleLogin = (conn: WebSocket, user: string) => {
+export const handleLogin = (conn: ExtWebSocket, user: string) => {
   // store the login info and send back success message
 
   // 1. if other user is logged in send a response
@@ -17,7 +18,8 @@ export const handleLogin = (conn: WebSocket, user: string) => {
     const data = { ...userData, success: false, error: false, message: "User with the same name is already logged in!" };
     sendMessageClient(conn, data)
   } else if (!connections[user]) {
-    connections.user = conn; // add it to the list of connections
+    connections[user] = conn; // add it to the list of connections
+    conn.name = user;
     const data  = { ...userData, success: true, error: false, message: "User logged in!" };
     sendMessageClient(conn, data);
   } else {
@@ -26,9 +28,28 @@ export const handleLogin = (conn: WebSocket, user: string) => {
   }
 }
 
-export const handleOffer = (conn: WebSocket, data: object) => {
+export const handleOffer = (conn: ExtWebSocket, user: string, data: object) => {
+  // 1.Send the offer to the user
+  const remoteConn = connections[user];
+  if (remoteConn) {
+    sendMessageClient(remoteConn, { ...data, user: conn.name });
+  }
+}
 
-  sendMessageClient(conn, data);
+export const handleAnswer = (conn: WebSocket, user: string, data: object) => {
+  // 1. Send all the answers from the multiple offers back to the offered user.
+  
+  const remoteConn = connections[user];
+  if (remoteConn) {
+    sendMessageClient(remoteConn, data );
+  }
+}
+
+export const handleIceCandidate = (conn: WebSocket, user: string, data: object) => {
+  const remoteConn = connections[user];
+  if (remoteConn !== null) {
+    sendMessageClient(remoteConn, data);
+  }
 }
 
 

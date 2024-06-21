@@ -11,9 +11,13 @@ export enum MESSAGE_TYPES {
 
 export interface WsDataI {
   type: MESSAGE_TYPES;
-  success: boolean;
-  error: boolean;
+  success?: boolean;
+  error?: boolean;
   message: string;
+  user?: string;
+  offer?: RTCSessionDescriptionInit;
+  answer?: RTCSessionDescriptionInit;
+  candidate?: RTCIceCandidateInit;
 }
 
 export const defaultWsData = {
@@ -24,6 +28,7 @@ export const defaultWsData = {
 }
 
 export const usernameAtom = atom('');
+export const remoteUsernameAtom = atom('');
 export const wsDataAtom = atom({} as WsDataI);
 export const loggedInAtom = atom(false);
 

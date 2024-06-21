@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { handleMessage, isValidJSON } from "./helper";
 import { useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
-import { usernameAtom, wsDataAtom, defaultWsData } from "@/state/atoms";
+import { usernameAtom, wsDataAtom, defaultWsData, MESSAGE_TYPES, loggedInAtom, remoteUsernameAtom } from "@/state/atoms";
 
 export const sendMessage = (conn: WebSocket, user: string, message: object) => {
   conn.send(JSON.stringify({
@@ -10,14 +10,74 @@ export const sendMessage = (conn: WebSocket, user: string, message: object) => {
   }));
 }
 
+export const setUpPeerConnection = async (
+  conn: WebSocket, 
+  remoteUser: string,
+  rtcConnection: RTCPeerConnection, 
+  video: HTMLVideoElement,
+  remoteVideo1: HTMLVideoElement
+) => {
+  // setup peer connection
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  video.srcObject = stream; 
+
+  video.onloadedmetadata = () => {
+    video.play();
+  }
+
+  stream.getTracks().forEach(track => {
+    console.log('getting tracked ')
+    rtcConnection.addTrack(track, stream);
+  })
+
+  const remoteVideo: HTMLVideoElement = document.querySelector("#remote");
+
+  // rendering other streams on video
+  rtcConnection.addEventListener('track', (event) => {
+    const [remoteStream] = event.streams;
+    if (remoteVideo) {      
+      console.log('tracks', remoteStream, event.streams);
+      remoteVideo.srcObject = remoteStream;
+      remoteVideo.onloadedmetadata = () => {
+        remoteVideo.play();
+      }
+    }
+  })
+
+}
+
 const useWebSocket = ({ port } : { port: number}) => {
   const websocket = useRef<WebSocket | null>(null);
   const [wsData, setWsData] = useAtom(wsDataAtom);
   const username = useAtomValue(usernameAtom);
+  const [remoteUsername, setRemoteUsername] = useAtom(remoteUsernameAtom);
+  const localConnection = useRef<RTCPeerConnection | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const [loggedIn, setLoggedIn] = useAtom(loggedInAtom);
+  const usernameRef = useRef(username);
+  const remoteUsernameRef = useRef(remoteUsername);
 
+  useEffect(() => {
+    usernameRef.current = username;
+    remoteUsernameRef.current = remoteUsername;
+  }, [username, remoteUsername])
 
   useEffect(() => {
     const ws = new WebSocket(`ws://localhost:${port}`);
+    const rtcConnection = new RTCPeerConnection();
+    localConnection.current = rtcConnection;
+
+
+    rtcConnection.onicecandidate = (event) => {
+      console.log('ice candidate', remoteUsernameRef.current);
+      if (event.candidate) {
+        sendMessage(ws, remoteUsernameRef.current, {
+          type: MESSAGE_TYPES.ICE_CANDIDATE,
+          candidate: event.candidate
+        })
+      }
+    }
 
     ws.onopen = () => {
       console.log('Websocket connection is eshtablished!!');
@@ -27,7 +87,14 @@ const useWebSocket = ({ port } : { port: number}) => {
     ws.onmessage = (message) => {
       // message.data can be string or JSON -> message is a event
       const data = isValidJSON(message?.data) ? JSON.parse(message?.data) : message?.data;
-      handleMessage(username, data, setWsData);  
+      if (localConnection.current) {
+        // set remote user
+        if (data.type === MESSAGE_TYPES.OFFER) {
+          setRemoteUsername(data.user);
+        }
+
+        handleMessage(ws, usernameRef.current, data, localConnection.current, setWsData); 
+      }
     }
 
     websocket.current = ws;
@@ -38,11 +105,21 @@ const useWebSocket = ({ port } : { port: number}) => {
       console.log(error, 'websocke error!!!!!!!!!!!!!!!!');
     }
 
-    return () => ws.close();
+    return () => {
+      ws.close();
+      localConnection.current = null;
+    }
   }, [])
 
+  useEffect(() => {
+    // this is wrong -> set up should happen only once
+    if (wsData.success) {
+      setLoggedIn(true);
+    }
+  }, [wsData])
 
-  return {connection: websocket.current }
+
+  return {connection: websocket.current, localConnection: localConnection.current, videoRef, remoteVideoRef }
 }
 
 export default useWebSocket;
