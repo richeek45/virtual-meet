@@ -24,8 +24,8 @@ function App() {
   }
 
   const handleConnect = () => {
-    if (videoRef.current && connection && localConnection) {
-      setUpPeerConnection(connection, remoteUsername, localConnection, videoRef.current, remoteVideoRef.current);
+    if (videoRef.current && remoteVideoRef.current && connection && localConnection) {
+      setUpPeerConnection(localConnection, videoRef.current, remoteVideoRef.current);
     } 
   }
 
@@ -37,27 +37,41 @@ function App() {
     }
   }
 
-  console.log(username, 'homepage ');
-
   return (
-    <div>
-      <div className='flex flex-col gap-4'>
-        <div className='flex w-2/6 gap-4'>
-          <Input type='text' placeholder="" value={username} onChange={(e) => setUsername(e.target.value)} />
-          <Button onClick={handleLogin} >Login</Button>
-          {loggedIn && <><ProfileIcon /><p>{username}</p></>}
-          <Button onClick={handleConnect} >Connect</Button>
-        </div>
-        <div className='flex w-2/6 gap-4'>
-          <Input type='text' placeholder="" value={remoteUsername} onChange={(e) => setRemoteUsername(e.target.value)} />
-          <Button onClick={handleJoin} >Other User</Button>
-          {loggedIn && <ProfileIcon />}
-        </div>
-        <video ref={videoRef} autoPlay></video>
-        <video id="remote" ref={remoteVideoRef} autoPlay></video>
-      </div>
+    <div className='flex justify-between h-screen p-10 gap-10'>
+      <div className='flex flex-col'>
 
-      <video id="local"></video>
+        <div className='flex gap-4 w-full justify-around'>
+          <div className='flex w-2/6 gap-4'>
+            <Input type='text' placeholder="" value={username} onChange={(e) => setUsername(e.target.value)} />
+            <Button onClick={handleLogin} >Login</Button>
+            {loggedIn && <><ProfileIcon /><p>{username}</p></>}
+            <Button onClick={handleConnect} >Connect</Button>
+          </div>
+          <div className='flex w-2/6 gap-4'>
+            <Input type='text' placeholder="" value={remoteUsername} onChange={(e) => setRemoteUsername(e.target.value)} />
+            <Button onClick={handleJoin} >Other User</Button>
+            {loggedIn && <ProfileIcon />}
+          </div>
+        </div>
+        
+        <div className='flex justify-between h-[80%] border-black border-2'>
+          <div>
+            <video className='h-full object-cover' ref={videoRef} autoPlay></video>
+          </div>
+          <div>
+            <video className='h-full object-cover' ref={remoteVideoRef} autoPlay></video>
+          </div>
+        </div>
+
+      </div>
+      <div className='flex flex-col w-[30%] border-solid border-black border-2 rounded-md p-6 gap-2'>
+        Messages
+        <div className='h-[90%] border-2 border-black rounded-sm'>
+          Message Rendering Box
+        </div>
+        <Input placeholder='Send a message' />
+      </div>
     </div>
   )
 }

@@ -11,14 +11,22 @@ export const sendMessage = (conn: WebSocket, user: string, message: object) => {
 }
 
 export const setUpPeerConnection = async (
-  conn: WebSocket, 
-  remoteUser: string,
   rtcConnection: RTCPeerConnection, 
   video: HTMLVideoElement,
-  remoteVideo1: HTMLVideoElement
+  remoteVideo: HTMLVideoElement
 ) => {
   // setup peer connection
-  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+  const constraints = {
+    // video: {
+    //   width: {exact: 1280}, 
+    //   height: {exact: 720}
+    // },
+    video: true,
+    audio: true
+  }
+
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
   video.srcObject = stream; 
 
   video.onloadedmetadata = () => {
@@ -30,17 +38,11 @@ export const setUpPeerConnection = async (
     rtcConnection.addTrack(track, stream);
   })
 
-  const remoteVideo: HTMLVideoElement = document.querySelector("#remote");
-
   // rendering other streams on video
   rtcConnection.addEventListener('track', (event) => {
     const [remoteStream] = event.streams;
     if (remoteVideo) {      
-      console.log('tracks', remoteStream, event.streams);
       remoteVideo.srcObject = remoteStream;
-      remoteVideo.onloadedmetadata = () => {
-        remoteVideo.play();
-      }
     }
   })
 
