@@ -33,7 +33,7 @@ export const setUpPeerConnection = async (
     video.play();
   }
 
-  stream.getTracks().forEach(track => {
+  stream.getTracks().forEach((track) => {
     console.log('getting tracked ')
     rtcConnection.addTrack(track, stream);
   })
@@ -46,6 +46,7 @@ export const setUpPeerConnection = async (
     }
   })
 
+  return stream;
 }
 
 const useWebSocket = ({ port } : { port: number}) => {
@@ -56,7 +57,7 @@ const useWebSocket = ({ port } : { port: number}) => {
   const localConnection = useRef<RTCPeerConnection | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const [loggedIn, setLoggedIn] = useAtom(loggedInAtom);
+  const [_, setLoggedIn] = useAtom(loggedInAtom);
   const usernameRef = useRef(username);
   const remoteUsernameRef = useRef(remoteUsername);
 

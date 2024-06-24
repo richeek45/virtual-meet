@@ -31,6 +31,8 @@ export const usernameAtom = atom('');
 export const remoteUsernameAtom = atom('');
 export const wsDataAtom = atom({} as WsDataI);
 export const loggedInAtom = atom(false);
+export const streamAtom = atom(null as unknown as MediaStream);
+export const mediaAtom = atom({ audio: true, video: true });
 
 
 
