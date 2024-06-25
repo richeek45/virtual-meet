@@ -1,4 +1,4 @@
-import ws, { WebSocket } from 'ws';
+import ws from 'ws';
 import { ExtWebSocket, messageDataI, messageHandler } from './messageHandler';
 
 export const wss = new ws.Server({ noServer: true });

@@ -76,3 +76,17 @@ export const handleMessage = (
     }
   }
 }
+
+export const getMediaStream = async (
+  video: HTMLVideoElement, 
+  constraints: MediaStreamConstraints
+) => {
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  video.srcObject = stream; 
+
+  video.onloadedmetadata = () => {
+    video.play();
+  }
+
+  return stream;
+}
