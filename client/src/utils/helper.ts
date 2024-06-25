@@ -19,7 +19,6 @@ export const onLogin = (data: WsDataI, setWsData: (val: WsDataI) => void) => {
 
 export const onOfferReceived = async (
   conn: WebSocket,
-  user: string, 
   data: WsDataI, 
   rtcPeerConnection: RTCPeerConnection
 ) => {
@@ -51,7 +50,6 @@ export const onIceCandidate = (data: WsDataI, rtcPeerConnection: RTCPeerConnecti
 
 export const handleMessage = (
   conn: WebSocket, 
-  user: string, 
   data: WsDataI, 
   rtcPeerConnection: RTCPeerConnection, 
   setWsData: (val: WsDataI) => void
@@ -64,7 +62,7 @@ export const handleMessage = (
       break;
     }
     case MESSAGE_TYPES.OFFER: {
-      onOfferReceived(conn, user, data, rtcPeerConnection);
+      onOfferReceived(conn, data, rtcPeerConnection);
       break;
     }
     case MESSAGE_TYPES.ANSWER: {

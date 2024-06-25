@@ -83,7 +83,7 @@ const useWebSocket = ({ port } : { port: number}) => {
           setRemoteUsername(data.user);
         }
 
-        handleMessage(ws, usernameRef.current, data, localConnection.current, setWsData); 
+        handleMessage(ws, data, localConnection.current, setWsData); 
       }
     }
 
