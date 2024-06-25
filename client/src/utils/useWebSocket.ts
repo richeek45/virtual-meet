@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { handleMessage, isValidJSON } from "./helper";
+import { getMediaStream, handleMessage, isValidJSON } from "./helper";
 import { useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { usernameAtom, wsDataAtom, defaultWsData, MESSAGE_TYPES, loggedInAtom, remoteUsernameAtom } from "@/state/atoms";
@@ -11,35 +11,22 @@ export const sendMessage = (conn: WebSocket, user: string, message: object) => {
 }
 
 export const setUpPeerConnection = async (
-  rtcConnection: RTCPeerConnection, 
+  constraints: MediaStreamConstraints,
+  rtcPeerConnection: RTCPeerConnection, 
   video: HTMLVideoElement,
   remoteVideo: HTMLVideoElement
 ) => {
   // setup peer connection
 
-  const constraints = {
-    // video: {
-    //   width: {exact: 1280}, 
-    //   height: {exact: 720}
-    // },
-    video: true,
-    audio: true
-  }
-
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
-  video.srcObject = stream; 
-
-  video.onloadedmetadata = () => {
-    video.play();
-  }
+  const stream = await getMediaStream(video, constraints)
 
   stream.getTracks().forEach((track) => {
     console.log('getting tracked ')
-    rtcConnection.addTrack(track, stream);
+    rtcPeerConnection.addTrack(track, stream);
   })
 
   // rendering other streams on video
-  rtcConnection.addEventListener('track', (event) => {
+  rtcPeerConnection.addEventListener('track', (event) => {
     const [remoteStream] = event.streams;
     if (remoteVideo) {      
       remoteVideo.srcObject = remoteStream;

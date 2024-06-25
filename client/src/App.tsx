@@ -6,6 +6,7 @@ import { MESSAGE_TYPES, loggedInAtom, mediaAtom, remoteUsernameAtom, streamAtom,
 import { useAtom, useAtomValue } from 'jotai';
 import { ProfileIcon } from './components/profileIcon';
 import { Mic, MicOff, Paperclip, SendHorizontal, Video, VideoOff } from 'lucide-react';
+import { getMediaStream } from './utils/helper';
 
 const iconStyle = `hover:cursor-pointer p-1 border-2 border-slate-300 rounded-md shadow-lg drop-shadow-md bg-white`;
 
@@ -51,7 +52,7 @@ function App() {
 
   const handleConnect = async () => {
     if (videoRef.current && remoteVideoRef.current && connection && localConnection) {
-      const stream = await setUpPeerConnection(localConnection, videoRef.current, remoteVideoRef.current);
+      const stream = await setUpPeerConnection({video: true,audio: true }, localConnection, videoRef.current, remoteVideoRef.current);
       setStream(stream);
     } 
   }
@@ -76,12 +77,47 @@ function App() {
     console.log('send')
   }
 
-  const handleVideoToggle = () => {
-    console.log('Mute Video!!', mediaToggle.video);
-    stream.getVideoTracks().forEach((track: { enabled: boolean; }) => {
-      track.enabled = !track.enabled;
-      setMediaToggle({ video: track.enabled, audio: mediaToggle.audio });
-    });
+  const replaceVideoTrack = (peerConnection: RTCPeerConnection, track: MediaStreamTrack) => {
+    for (const s of peerConnection.getSenders()) {
+      if (s.track == null || s.track.kind === "video") {
+          s.replaceTrack(track);
+      }
+    }
+
+    for (const t of peerConnection.getTransceivers()) {
+      if (t.sender.track?.kind == null ||
+          t.sender.track.kind === "video") {
+          t.direction = "sendrecv";
+      }
+    }
+  }
+
+  const handleVideoToggle = async () => {
+    if (localConnection && videoRef.current) {
+      // 1. Disable Video -> remove video tracks and add audio tracks again
+      if (mediaToggle.video) {
+        stream.getVideoTracks().forEach((track) => {  
+          track.enabled = !track.enabled;
+        });
+  
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());
+
+        setMediaToggle({ video: false, audio: mediaToggle.audio });
+
+      } else {
+        // 2. Enable Video -> Add video tracks again   
+        const video = videoRef.current;
+
+        const stream = await getMediaStream(video, {audio: true, video: true })
+        stream.getVideoTracks().forEach((track) => {
+          replaceVideoTrack(localConnection, track);
+        })
+
+        setStream(stream);
+        setMediaToggle({ video: true, audio: mediaToggle.audio });
+      }
+    }
   }
 
   return (
@@ -115,6 +151,7 @@ function App() {
           <div className='flex justify-center items-center shadow-lg bg-slate-200 w-2/3 gap-4'>
             <VideoBtn handleVideoToggle={handleVideoToggle} videoEnabled={mediaToggle.video} />
             <AudioBtn handleAudioToggle={handleAudioToggle} audioEnabled={mediaToggle.audio} />
+
           </div>
         </div>
 
