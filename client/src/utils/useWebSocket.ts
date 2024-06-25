@@ -77,13 +77,8 @@ const useWebSocket = ({ port } : { port: number}) => {
     ws.onmessage = (message) => {
       // message.data can be string or JSON -> message is a event
       const data = isValidJSON(message?.data) ? JSON.parse(message?.data) : message?.data;
-      if (localConnection.current) {
-        // set remote user
-        if (data.type === MESSAGE_TYPES.OFFER) {
-          setRemoteUsername(data.user);
-        }
-
-        handleMessage(ws, data, localConnection.current, setWsData); 
+      if (localConnection.current && videoRef.current && remoteVideoRef.current) {
+        handleMessage(ws, data, localConnection.current, setWsData, setLoggedIn, videoRef.current, remoteVideoRef.current, setRemoteUsername); 
       }
     }
 
@@ -100,13 +95,6 @@ const useWebSocket = ({ port } : { port: number}) => {
       localConnection.current = null;
     }
   }, [])
-
-  useEffect(() => {
-    // this is wrong -> set up should happen only once
-    if (wsData.success) {
-      setLoggedIn(true);
-    }
-  }, [wsData])
 
 
   return {connection: websocket.current, localConnection: localConnection.current, videoRef, remoteVideoRef }

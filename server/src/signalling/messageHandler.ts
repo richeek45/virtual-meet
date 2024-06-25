@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { handleAnswer, handleIceCandidate, handleLogin, handleOffer } from "./utils";
+import { handleAnswer, handleEndConnection, handleIceCandidate, handleLogin, handleOffer } from "./utils";
 
 export enum MESSAGE_TYPES {
   LOGIN = "LOGIN",
@@ -52,7 +52,7 @@ export const messageHandler = (conn: ExtWebSocket, message: messageDataI) => {
       break;
     }
     case MESSAGE_TYPES.LEAVE: {
-
+      handleEndConnection(conn, user, message);
       break;
     }
 

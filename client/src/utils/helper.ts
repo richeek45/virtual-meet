@@ -11,8 +11,9 @@ export const isValidJSON = (str: string) => {
   }
 }
 
-export const onLogin = (data: WsDataI, setWsData: (val: WsDataI) => void) => {
+export const onLogin = (data: WsDataI, setWsData: (val: WsDataI) => void, setLoggedIn: (val: boolean) => void) => {
   console.log('setting values', data)
+  setLoggedIn(true);
   setWsData(data);
 
 }
@@ -20,7 +21,8 @@ export const onLogin = (data: WsDataI, setWsData: (val: WsDataI) => void) => {
 export const onOfferReceived = async (
   conn: WebSocket,
   data: WsDataI, 
-  rtcPeerConnection: RTCPeerConnection
+  rtcPeerConnection: RTCPeerConnection,
+  setRemoteUsername: (val: string) => void
 ) => {
   // 1. Set offer to remote description 
   // 2. create the answer
@@ -30,6 +32,8 @@ export const onOfferReceived = async (
     await rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
     const answer = await rtcPeerConnection.createAnswer();
     rtcPeerConnection.setLocalDescription(answer);
+    setRemoteUsername(data.user ?? "");
+
     if (data.user) {
       sendMessage(conn, data.user, { type: MESSAGE_TYPES.ANSWER, answer });
     }
@@ -48,21 +52,38 @@ export const onIceCandidate = (data: WsDataI, rtcPeerConnection: RTCPeerConnecti
   }
 }
 
+export const onEndCall = (
+  rtcPeerConnection: RTCPeerConnection,
+  video: HTMLVideoElement, 
+  remoteVideo: HTMLVideoElement,
+  setRemoteUsername: (val: string) => void
+) => {
+  // video.srcObject = null;
+  remoteVideo.srcObject = null;
+  rtcPeerConnection.close();
+  rtcPeerConnection.onicecandidate = null;
+  setRemoteUsername('');
+}
+
 export const handleMessage = (
   conn: WebSocket, 
   data: WsDataI, 
   rtcPeerConnection: RTCPeerConnection, 
-  setWsData: (val: WsDataI) => void
+  setWsData: (val: WsDataI) => void,
+  setLoggedIn: (val: boolean)  => void,
+  video: HTMLVideoElement,
+  remoteVideo: HTMLVideoElement,
+  setRemoteUsername: (val: string)  => void
 ) => {
   console.log(data);
   
   switch(data.type) {
     case MESSAGE_TYPES.LOGIN: {
-      onLogin(data, setWsData);
+      onLogin(data, setWsData, setLoggedIn);
       break;
     }
     case MESSAGE_TYPES.OFFER: {
-      onOfferReceived(conn, data, rtcPeerConnection);
+      onOfferReceived(conn, data, rtcPeerConnection, setRemoteUsername);
       break;
     }
     case MESSAGE_TYPES.ANSWER: {
@@ -71,6 +92,11 @@ export const handleMessage = (
     }
     case MESSAGE_TYPES.ICE_CANDIDATE: {
       onIceCandidate(data, rtcPeerConnection);
+      break;
+    }
+    case MESSAGE_TYPES.LEAVE: {
+      onEndCall(rtcPeerConnection, video, remoteVideo, setRemoteUsername);
+      break;
     }
   }
 }

@@ -5,7 +5,7 @@ import './App.css';
 import { MESSAGE_TYPES, loggedInAtom, mediaAtom, remoteUsernameAtom, streamAtom, usernameAtom, wsDataAtom } from './state/atoms';
 import { useAtom, useAtomValue } from 'jotai';
 import { ProfileIcon } from './components/profileIcon';
-import { Mic, MicOff, Paperclip, SendHorizontal, Video, VideoOff } from 'lucide-react';
+import { Mic, MicOff, Paperclip, Phone, SendHorizontal, Video, VideoOff } from 'lucide-react';
 import { getMediaStream } from './utils/helper';
 
 const iconStyle = `hover:cursor-pointer p-1 border-2 border-slate-300 rounded-md shadow-lg drop-shadow-md bg-white`;
@@ -34,11 +34,8 @@ function App() {
   const [remoteUsername, setRemoteUsername] = useAtom(remoteUsernameAtom);
   const loggedIn = useAtomValue(loggedInAtom);
   const { connection, localConnection, videoRef, remoteVideoRef } = useWebSocket({port: 8080});
-  const wsData = useAtomValue(wsDataAtom);
   const [stream, setStream] = useAtom(streamAtom);
   const [mediaToggle, setMediaToggle] = useAtom(mediaAtom); 
-
-  console.log(loggedIn, wsData);
 
 
   const handleLogin = () => {
@@ -62,6 +59,19 @@ function App() {
       const offer = await localConnection.createOffer();
       await localConnection.setLocalDescription(offer);
       sendMessage(connection, remoteUsername, { type: MESSAGE_TYPES.OFFER, offer })
+    }
+  }
+
+  const handleEndCall = () => {
+    if (localConnection && connection && videoRef.current && remoteVideoRef.current) {
+      sendMessage(connection, remoteUsername, { type: MESSAGE_TYPES.LEAVE });
+      videoRef.current.srcObject = null;
+      remoteVideoRef.current.srcObject = null;
+      localConnection.close();
+      localConnection.onicecandidate = null;
+      setRemoteUsername('');
+      // end with a message for ending the call!
+      // back to homesceen
     }
   }
 
@@ -140,10 +150,10 @@ function App() {
         
         <div className='flex justify-between h-[80%] border-black border-2'>
           <div>
-            <video className='h-full object-cover' ref={videoRef} autoPlay></video>
+            <video id='local' className='h-full object-cover' ref={videoRef} autoPlay></video>
           </div>
           <div>
-            <video className='h-full object-cover' ref={remoteVideoRef} autoPlay></video>
+            <video id='remote' className='h-full object-cover' ref={remoteVideoRef} autoPlay></video>
           </div>
         </div>
 
@@ -151,7 +161,7 @@ function App() {
           <div className='flex justify-center items-center shadow-lg bg-slate-200 w-2/3 gap-4'>
             <VideoBtn handleVideoToggle={handleVideoToggle} videoEnabled={mediaToggle.video} />
             <AudioBtn handleAudioToggle={handleAudioToggle} audioEnabled={mediaToggle.audio} />
-
+            <Phone onClick={handleEndCall} size={40} fill='white' strokeWidth='1.1' className={`${iconStyle} bg-red-500 `} />
           </div>
         </div>
 

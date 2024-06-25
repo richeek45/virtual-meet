@@ -52,7 +52,14 @@ export const handleIceCandidate = (conn: WebSocket, user: string, data: object) 
   }
 }
 
+export const handleEndConnection = (conn: WebSocket, user: string, data: object) => {
+  const remoteConn = connections[user];
 
+  if (remoteConn !== null)  {
+    sendMessageClient(remoteConn, data);
+    delete connections[user];
+  }
+} 
 
 
 
