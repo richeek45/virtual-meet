@@ -2,14 +2,16 @@ import { Input } from './components/ui/input';
 import useWebSocket, { sendMessage, setUpPeerConnection } from './utils/useWebSocket';
 import { Button } from './components/ui/button';
 import './App.css';
-import { MESSAGE_TYPES, loggedInAtom, mediaAtom, messageAtom, remoteUsernameAtom, streamAtom, usernameAtom, wsDataAtom } from './state/atoms';
+import { MESSAGE_TYPES, loggedInAtom, mediaAtom, messageAtom, remoteUsernameAtom, streamAtom, usernameAtom } from './state/atoms';
 import { useAtom, useAtomValue } from 'jotai';
-import { ProfileIcon } from './components/profileIcon';
-import { Mic, MicOff, Paperclip, Phone, SendHorizontal, Video, VideoOff } from 'lucide-react';
+import { LogIn, Mic, MicOff, Paperclip, Phone, SendHorizontal, Video, VideoOff } from 'lucide-react';
 import { getMediaStream } from './utils/helper';
 import { useState } from 'react';
+import { ChatBubble } from './components/MessageBox';
+import Avatar from './components/Avatar';
 
 const iconStyle = `hover:cursor-pointer p-1 border-2 border-slate-300 rounded-md shadow-lg drop-shadow-md bg-white`;
+const inputStyle = `flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`
 
 const VideoBtn = ({ videoEnabled, handleVideoToggle} : {videoEnabled: boolean, handleVideoToggle: () => void}) => {
 
@@ -39,14 +41,6 @@ function App() {
   const [mediaToggle, setMediaToggle] = useAtom(mediaAtom); 
   const [messages, setMessages] = useAtom(messageAtom);
   const [messageSend, setMessageSend] = useState('');
-
-  const messageItems = messages.map(data => {
-    return <div className='flex gap-2 px-2 text-start'>
-      <p>{data.user}</p>
-      <p>{data.id}</p>
-      <p className='text-sm'>{data.message}</p>
-    </div>
-  })
 
 
   const handleLogin = () => {
@@ -148,21 +142,34 @@ function App() {
     }
   }
 
+  const handleFileShare = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = (event) => {
+      if (input.files) {
+        // you can use this method to get file and perform respective operations
+        let files = Array.from(input.files);
+        console.log(files);
+
+      }
+    };
+    input.click();
+  }
+
   return (
     <div className='flex justify-between h-screen p-10 gap-10'>
-      <div className='flex flex-col'>
+      <div className='flex flex-col gap-2'>
 
         <div className='flex gap-4 w-full justify-around'>
           <div className='flex w-2/6 gap-4'>
-            <Input type='text' placeholder="" value={username} onChange={(e) => setUsername(e.target.value)} />
-            <Button onClick={handleLogin} >Login</Button>
-            {loggedIn && <><ProfileIcon /><p>{username}</p></>}
+            <Input type='text' placeholder="Enter your name..." value={username} onChange={(e) => setUsername(e.target.value)} />
+            <Button  className='border-2' onClick={handleLogin} ><LogIn /></Button>
+            {loggedIn && <><Avatar name={username} /><p>{username}</p></>}
             <Button onClick={handleConnect} >Connect</Button>
           </div>
           <div className='flex w-2/6 gap-4'>
-            <Input type='text' placeholder="" value={remoteUsername} onChange={(e) => setRemoteUsername(e.target.value)} />
-            <Button onClick={handleJoin} >Other User</Button>
-            {loggedIn && <ProfileIcon />}
+            <Input type='text' placeholder="Enter other user's name..." value={remoteUsername} onChange={(e) => setRemoteUsername(e.target.value)} />
+            <Button onClick={handleJoin} >Connect</Button>
           </div>
         </div>
         
@@ -186,15 +193,21 @@ function App() {
       </div>
 
 
-      <div className='flex flex-col w-[30%] border-solid border-black border-2 rounded-md p-6 gap-2'>
+      <div className='flex flex-col w-[45%] border-solid border-black border-2 rounded-md p-6 gap-2'>
         Messages
-        <div className='h-[90%] border-2 border-black rounded-sm overflow-scroll'>
+        <div className='h-[90%] border-2 border-black rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
           Message Rendering Box
-          {messageItems}
+          {messages.map(data => {
+            return <ChatBubble name={data.user} message={data.message} id={data.id} />
+          })}
         </div>
-        <Input placeholder='Send a message' onChange={(event) => setMessageSend(event.target.value)} />
-        <Paperclip />
-        <SendHorizontal onClick={handleSendMessage} size={40} className={iconStyle} />
+        <div className={`flex drop-shadow-md ${inputStyle}`}>
+          <input className='outline-none w-[70%]' placeholder='Send a message' onChange={(event) => setMessageSend(event.target.value)} />
+          <div className='flex justify-center items-center'>
+            <Button variant='ghost' size='sm' onClick={handleFileShare}><Paperclip /></Button>
+            <Button variant='ghost' size='sm' onClick={handleSendMessage}><SendHorizontal size={30} /></Button>
+          </div>
+        </div>
       </div>
     </div>
   )
