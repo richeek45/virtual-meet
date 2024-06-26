@@ -20,6 +20,12 @@ export interface WsDataI {
   candidate?: RTCIceCandidateInit;
 }
 
+export interface MessageI {
+  id: number;
+  user: string;
+  message: string;
+}
+
 export const defaultWsData = {
   success: false,
   error: false,
@@ -33,6 +39,7 @@ export const wsDataAtom = atom({} as WsDataI);
 export const loggedInAtom = atom(false);
 export const streamAtom = atom(null as unknown as MediaStream);
 export const mediaAtom = atom({ audio: true, video: true });
+export const messageAtom = atom([] as MessageI[]);
 
 
 

@@ -3,6 +3,7 @@ import { getMediaStream, handleMessage, isValidJSON } from "./helper";
 import { useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { usernameAtom, wsDataAtom, defaultWsData, MESSAGE_TYPES, loggedInAtom, remoteUsernameAtom } from "@/state/atoms";
+import useDataChannel from "./useDataChannel";
 
 export const sendMessage = (conn: WebSocket, user: string, message: object) => {
   conn.send(JSON.stringify({
@@ -47,6 +48,8 @@ const useWebSocket = ({ port } : { port: number}) => {
   const [_, setLoggedIn] = useAtom(loggedInAtom);
   const usernameRef = useRef(username);
   const remoteUsernameRef = useRef(remoteUsername);
+
+  const { dataChannel } = useDataChannel(localConnection.current);
 
   useEffect(() => {
     usernameRef.current = username;
@@ -97,7 +100,7 @@ const useWebSocket = ({ port } : { port: number}) => {
   }, [])
 
 
-  return {connection: websocket.current, localConnection: localConnection.current, videoRef, remoteVideoRef }
+  return {connection: websocket.current, localConnection: localConnection.current, videoRef, remoteVideoRef, dataChannel }
 }
 
 export default useWebSocket;

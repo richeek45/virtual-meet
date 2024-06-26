@@ -2,11 +2,12 @@ import { Input } from './components/ui/input';
 import useWebSocket, { sendMessage, setUpPeerConnection } from './utils/useWebSocket';
 import { Button } from './components/ui/button';
 import './App.css';
-import { MESSAGE_TYPES, loggedInAtom, mediaAtom, remoteUsernameAtom, streamAtom, usernameAtom, wsDataAtom } from './state/atoms';
+import { MESSAGE_TYPES, loggedInAtom, mediaAtom, messageAtom, remoteUsernameAtom, streamAtom, usernameAtom, wsDataAtom } from './state/atoms';
 import { useAtom, useAtomValue } from 'jotai';
 import { ProfileIcon } from './components/profileIcon';
 import { Mic, MicOff, Paperclip, Phone, SendHorizontal, Video, VideoOff } from 'lucide-react';
 import { getMediaStream } from './utils/helper';
+import { useState } from 'react';
 
 const iconStyle = `hover:cursor-pointer p-1 border-2 border-slate-300 rounded-md shadow-lg drop-shadow-md bg-white`;
 
@@ -33,9 +34,19 @@ function App() {
   const [username, setUsername] = useAtom(usernameAtom);
   const [remoteUsername, setRemoteUsername] = useAtom(remoteUsernameAtom);
   const loggedIn = useAtomValue(loggedInAtom);
-  const { connection, localConnection, videoRef, remoteVideoRef } = useWebSocket({port: 8080});
+  const { connection, localConnection, videoRef, remoteVideoRef, dataChannel } = useWebSocket({port: 8080});
   const [stream, setStream] = useAtom(streamAtom);
   const [mediaToggle, setMediaToggle] = useAtom(mediaAtom); 
+  const [messages, setMessages] = useAtom(messageAtom);
+  const [messageSend, setMessageSend] = useState('');
+
+  const messageItems = messages.map(data => {
+    return <div className='flex gap-2 px-2 text-start'>
+      <p>{data.user}</p>
+      <p>{data.id}</p>
+      <p className='text-sm'>{data.message}</p>
+    </div>
+  })
 
 
   const handleLogin = () => {
@@ -84,7 +95,14 @@ function App() {
   }
 
   const handleSendMessage = () => {
-    console.log('send')
+    console.log('send', messageSend);
+    if (dataChannel) {
+      dataChannel.send(messageSend);
+      const lastId = messages[messages.length - 1]?.id ?? 0;
+      const newMessage = {id: lastId + 1, user: username, message: messageSend };
+      console.log(newMessage);
+      setMessages([ ...messages, newMessage]);
+    }
   }
 
   const replaceVideoTrack = (peerConnection: RTCPeerConnection, track: MediaStreamTrack) => {
@@ -170,12 +188,13 @@ function App() {
 
       <div className='flex flex-col w-[30%] border-solid border-black border-2 rounded-md p-6 gap-2'>
         Messages
-        <div className='h-[90%] border-2 border-black rounded-sm'>
+        <div className='h-[90%] border-2 border-black rounded-sm overflow-scroll'>
           Message Rendering Box
+          {messageItems}
         </div>
-        <Input placeholder='Send a message' />
+        <Input placeholder='Send a message' onChange={(event) => setMessageSend(event.target.value)} />
         <Paperclip />
-        <SendHorizontal onClick={handleSendMessage} />
+        <SendHorizontal onClick={handleSendMessage} size={40} className={iconStyle} />
       </div>
     </div>
   )
