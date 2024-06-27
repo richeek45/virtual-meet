@@ -2,13 +2,14 @@ import { Input } from './components/ui/input';
 import useWebSocket, { sendMessage, setUpPeerConnection } from './utils/useWebSocket';
 import { Button } from './components/ui/button';
 import './App.css';
-import { MESSAGE_TYPES, loggedInAtom, mediaAtom, messageAtom, remoteUsernameAtom, streamAtom, usernameAtom } from './state/atoms';
+import { MESSAGE_TYPES, MessageEnum, loggedInAtom, mediaAtom, messageAtom, remoteUsernameAtom, streamAtom, usernameAtom } from './state/atoms';
 import { useAtom, useAtomValue } from 'jotai';
 import { LogIn, Mic, MicOff, Paperclip, Phone, SendHorizontal, Video, VideoOff } from 'lucide-react';
 import { getMediaStream } from './utils/helper';
 import { useEffect, useRef, useState } from 'react';
 import { ChatBubble } from './components/MessageBox';
 import Avatar from './components/Avatar';
+import FileShare from './components/FIleShare';
 
 const iconStyle = `hover:cursor-pointer p-1 border-2 border-slate-300 rounded-md shadow-lg drop-shadow-md bg-white`;
 const inputStyle = `flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`
@@ -98,13 +99,12 @@ function App() {
   }
 
   const handleSendMessage = () => {
-    console.log('send', messageSend);
     if (dataChannel) {
-      dataChannel.send(messageSend);
       const lastId = messages[messages.length - 1]?.id ?? 0;
-      const newMessage = {id: lastId + 1, user: username, message: messageSend };
-      console.log(newMessage);
+      const newMessage = {id: lastId + 1, user: username, type: MessageEnum.MESSAGE, message: messageSend };
+      dataChannel.send(JSON.stringify(newMessage));
       setMessages([ ...messages, newMessage]);
+      console.log(newMessage);
     }
   }
 
@@ -151,20 +151,6 @@ function App() {
     }
   }
 
-  const handleFileShare = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.onchange = (event) => {
-      if (input.files) {
-        // you can use this method to get file and perform respective operations
-        let files = Array.from(input.files);
-        console.log(files);
-
-      }
-    };
-    input.click();
-  }
-
   return (
     <div className='flex justify-between h-screen p-10 gap-10'>
       <div className='flex flex-col gap-2'>
@@ -207,13 +193,13 @@ function App() {
         <div id="message" ref={messageRef} className='h-[90%] border-2 border-black rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
           Message Rendering Box
           {messages.map(data => {
-            return <ChatBubble key={data.id} name={data.user} message={data.message} id={data.id} />
+            return <ChatBubble key={data.id} name={data.user} type={data.type} message={data.message} id={data.id} files={data.files} />
           })}
         </div>
         <div className={`flex drop-shadow-md ${inputStyle}`}>
           <input className='outline-none w-[70%]' placeholder='Send a message' onChange={(event) => setMessageSend(event.target.value)} />
           <div className='flex justify-center items-center'>
-            <Button variant='ghost' size='sm' onClick={handleFileShare}><Paperclip /></Button>
+            <FileShare />
             <Button variant='ghost' size='sm' onClick={handleSendMessage}><SendHorizontal size={30} /></Button>
           </div>
         </div>
