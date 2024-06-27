@@ -6,7 +6,7 @@ import { MESSAGE_TYPES, loggedInAtom, mediaAtom, messageAtom, remoteUsernameAtom
 import { useAtom, useAtomValue } from 'jotai';
 import { LogIn, Mic, MicOff, Paperclip, Phone, SendHorizontal, Video, VideoOff } from 'lucide-react';
 import { getMediaStream } from './utils/helper';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChatBubble } from './components/MessageBox';
 import Avatar from './components/Avatar';
 
@@ -41,6 +41,15 @@ function App() {
   const [mediaToggle, setMediaToggle] = useAtom(mediaAtom); 
   const [messages, setMessages] = useAtom(messageAtom);
   const [messageSend, setMessageSend] = useState('');
+  const messageRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (messageRef.current) {
+      console.log('getting here', messageRef.current)
+        messageRef.current.scrollTo(0, messageRef.current.scrollHeight);
+        // messageRef.current.scrollIntoView({ behavior: "smooth", block: "end" })
+      }
+  }, [messages]);
 
 
   const handleLogin = () => {
@@ -195,10 +204,10 @@ function App() {
 
       <div className='flex flex-col w-[45%] border-solid border-black border-2 rounded-md p-6 gap-2'>
         Messages
-        <div className='h-[90%] border-2 border-black rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
+        <div id="message" ref={messageRef} className='h-[90%] border-2 border-black rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
           Message Rendering Box
           {messages.map(data => {
-            return <ChatBubble name={data.user} message={data.message} id={data.id} />
+            return <ChatBubble key={data.id} name={data.user} message={data.message} id={data.id} />
           })}
         </div>
         <div className={`flex drop-shadow-md ${inputStyle}`}>

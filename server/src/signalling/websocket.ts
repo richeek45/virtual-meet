@@ -1,5 +1,5 @@
 import ws from 'ws';
-import { ExtWebSocket, messageDataI, messageHandler } from './messageHandler';
+import { ExtWebSocket, connections, messageDataI, messageHandler } from './messageHandler';
 
 export const wss = new ws.Server({ noServer: true });
 
@@ -22,10 +22,13 @@ wss.on('connection', (ws: ExtWebSocket) => {
   });
 
   ws.on('close', () => {
+    // remove the connection
+    delete connections[ws.name];
     console.log('close the connection!');
   })
 
   ws.on('error', () => {
+    delete connections[ws.name];
     console.log('error');
   })
 
