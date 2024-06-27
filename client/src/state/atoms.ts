@@ -20,10 +20,16 @@ export interface WsDataI {
   candidate?: RTCIceCandidateInit;
 }
 
+export enum MessageEnum {
+  MESSAGE = "MESSAGE",
+  FILE = "FILE"
+} 
 export interface MessageI {
   id: number;
   user: string;
+  type: MessageEnum,
   message: string;
+  files?: File[]
 }
 
 export const defaultWsData = {

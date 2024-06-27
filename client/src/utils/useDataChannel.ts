@@ -1,4 +1,4 @@
-import { MessageI, messageAtom, remoteUsernameAtom } from "@/state/atoms";
+import { MessageEnum, MessageI, messageAtom, remoteUsernameAtom } from "@/state/atoms";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useRef } from "react";
 
@@ -29,10 +29,9 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
         }
     
         channel.onmessage = (event) => {
-          console.log('message: = ', event.data);
-          const lastId = messageR.current[messageR.current.length - 1]?.id ?? 0;
-          const newMessage = { id: lastId + 1, user: remoteUsernameRef.current, message: event.data}
-          setMessages([ ...messageR.current, newMessage]);
+          const data: MessageI = JSON.parse(event.data); 
+          console.log('message: = ', data);
+          setMessages([ ...messageR.current, data]);
         }
     
         channel.onclose = () => {
