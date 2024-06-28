@@ -2,10 +2,11 @@ import { Paperclip } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { useAtom } from "jotai";
-import { MessageEnum, MessageI, messageAtom } from "@/state/atoms";
+import { MessageEnum, MessageI, ShareStatusEnum, messageAtom } from "@/state/atoms";
+import { sendFileChunks } from "@/utils/helper";
 
 
-const FileShare = () => {
+const FileShare = ({ dataChannel } : { dataChannel: RTCDataChannel}) => {
   const [files, setFiles] = useState<File[] | null>(null);
   const [messages, setMessages] = useAtom(messageAtom);
 
@@ -18,8 +19,18 @@ const FileShare = () => {
         let files = Array.from(input.files);
         console.log(files);
         setFiles(files);
-        const newMessage: MessageI = { id: 1111, type: MessageEnum.FILE, message: 'files', user: 'Richeek', files };
+        const fileMetadata = { name: files[0].name, size: files[0].size, fileType: files[0].type };
+        const newMessage: MessageI = { id: 1111, type: MessageEnum.FILE, shareStatus: ShareStatusEnum.START, user: 'Richeek', metadata: fileMetadata };
+
         setMessages([ ...messages, newMessage])
+        // start sending in chunks
+
+        if (files.length > 0) {
+          dataChannel.send(JSON.stringify(newMessage))
+        }
+
+        sendFileChunks(files[0], dataChannel);
+
       }
     };
     input.click();

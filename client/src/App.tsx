@@ -193,13 +193,13 @@ function App() {
         <div id="message" ref={messageRef} className='h-[90%] border-2 border-black rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
           Message Rendering Box
           {messages.map(data => {
-            return <ChatBubble key={data.id} name={data.user} type={data.type} message={data.message} id={data.id} files={data.files} />
+            return <ChatBubble key={data.id} name={data.user} type={data.type} message={data.message ?? ''} id={data.id} files={data.files} />
           })}
         </div>
         <div className={`flex drop-shadow-md ${inputStyle}`}>
           <input className='outline-none w-[70%]' placeholder='Send a message' onChange={(event) => setMessageSend(event.target.value)} />
           <div className='flex justify-center items-center'>
-            <FileShare />
+            <FileShare dataChannel={dataChannel} />
             <Button variant='ghost' size='sm' onClick={handleSendMessage}><SendHorizontal size={30} /></Button>
           </div>
         </div>

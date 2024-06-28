@@ -24,12 +24,27 @@ export enum MessageEnum {
   MESSAGE = "MESSAGE",
   FILE = "FILE"
 } 
+
+export enum ShareStatusEnum {
+  START = "START",
+  END = "END",
+
+}
+
+export interface FileMetadata {
+  name: string;
+  size: number;
+  fileType: string;
+}
+
 export interface MessageI {
   id: number;
   user: string;
-  type: MessageEnum,
-  message: string;
-  files?: File[]
+  type: MessageEnum;
+  message?: string;
+  files?: File[];
+  shareStatus?: ShareStatusEnum,
+  metadata?: FileMetadata;
 }
 
 export const defaultWsData = {
@@ -46,6 +61,7 @@ export const loggedInAtom = atom(false);
 export const streamAtom = atom(null as unknown as MediaStream);
 export const mediaAtom = atom({ audio: true, video: true });
 export const messageAtom = atom([] as MessageI[]);
+export const progressAtom = atom(0);
 
 
 
