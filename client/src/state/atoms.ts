@@ -42,9 +42,8 @@ export interface MessageI {
   user: string;
   type: MessageEnum;
   message?: string;
-  files?: File[];
   shareStatus?: ShareStatusEnum,
-  metadata?: FileMetadata;
+  fileMetadata?: FileMetadata;
 }
 
 export const defaultWsData = {
@@ -62,10 +61,3 @@ export const streamAtom = atom(null as unknown as MediaStream);
 export const mediaAtom = atom({ audio: true, video: true });
 export const messageAtom = atom([] as MessageI[]);
 export const progressAtom = atom(0);
-
-
-
-
-
-
-

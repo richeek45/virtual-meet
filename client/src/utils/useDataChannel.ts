@@ -23,6 +23,7 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
       const dataChannelOptions = { ordered: true };
       let currentFile: string[] = []; // store the received chunks
       let fileMetadata: FileMetadata | null = null;
+      let currentFileSize = 0;
 
       dataChannel.current = rtcPeerConnection.createDataChannel("chat", dataChannelOptions);
       rtcPeerConnection.ondatachannel = (event) => {
@@ -34,7 +35,7 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
     
         channel.onmessage = (event) => {
           let data: MessageI = event.data; 
-          console.log('message: = ', data);
+          // console.log('message: = ', data);
 
           try {
             data = JSON.parse(event.data);
@@ -43,14 +44,13 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
               setMessages([ ...messageR.current, data]);
             }
             if (data.type === MessageEnum.FILE) {
-              console.log('file getting here', fileMetadata, data?.shareStatus)
               // receive file in chunks and add progress bar
-              if (data.shareStatus === ShareStatusEnum.START && data.metadata) {
+              if (data.shareStatus === ShareStatusEnum.START && data.fileMetadata) {
                 currentFile = [];
-                fileMetadata = data.metadata;
+                fileMetadata = data.fileMetadata;
+                setMessages([ ...messageR.current, data ]);
               }
               if (data.shareStatus === ShareStatusEnum.END && fileMetadata) {
-                console.log('ending')
                 saveFile(currentFile, fileMetadata);
               }
             }
@@ -60,6 +60,11 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
               currentFile.push(atob(data));
 
               /// add the progress logic
+              if (fileMetadata) {
+                currentFileSize += currentFile[currentFile.length - 1].length;
+                const progress = Math.floor((currentFileSize/fileMetadata.size) * 100);
+                setProgress(progress);
+              }
             }
           }
         }

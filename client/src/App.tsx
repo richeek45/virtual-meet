@@ -193,7 +193,16 @@ function App() {
         <div id="message" ref={messageRef} className='h-[90%] border-2 border-black rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
           Message Rendering Box
           {messages.map(data => {
-            return <ChatBubble key={data.id} name={data.user} type={data.type} message={data.message ?? ''} id={data.id} files={data.files} />
+            const lastId = messages[messages.length - 1]?.id ?? 0;
+            const showProgress = lastId === data.id;
+            return <ChatBubble 
+              key={data.id} name={data.user} 
+              type={data.type} 
+              message={data.message ?? ''} 
+              id={data.id} 
+              fileMetadata={data.fileMetadata} 
+              showProgress={showProgress} 
+            />
           })}
         </div>
         <div className={`flex drop-shadow-md ${inputStyle}`}>

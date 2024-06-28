@@ -1,14 +1,16 @@
 import { Paperclip } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
-import { useAtom } from "jotai";
-import { MessageEnum, MessageI, ShareStatusEnum, messageAtom } from "@/state/atoms";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { MessageEnum, MessageI, ShareStatusEnum, messageAtom, progressAtom, usernameAtom } from "@/state/atoms";
 import { sendFileChunks } from "@/utils/helper";
 
 
 const FileShare = ({ dataChannel } : { dataChannel: RTCDataChannel}) => {
   const [files, setFiles] = useState<File[] | null>(null);
   const [messages, setMessages] = useAtom(messageAtom);
+  const username = useAtomValue(usernameAtom);
+  const setProgress = useSetAtom(progressAtom);
 
   const openFilePrompt = () => {
     const input = document.createElement('input');
@@ -17,10 +19,10 @@ const FileShare = ({ dataChannel } : { dataChannel: RTCDataChannel}) => {
       if (input.files) {
         // start sending with the progress bar
         let files = Array.from(input.files);
-        console.log(files);
         setFiles(files);
+        const lastId = messages[messages.length - 1]?.id ?? 0;
         const fileMetadata = { name: files[0].name, size: files[0].size, fileType: files[0].type };
-        const newMessage: MessageI = { id: 1111, type: MessageEnum.FILE, shareStatus: ShareStatusEnum.START, user: 'Richeek', metadata: fileMetadata };
+        const newMessage: MessageI = { id: lastId + 1, type: MessageEnum.FILE, shareStatus: ShareStatusEnum.START, user: username, fileMetadata: fileMetadata };
 
         setMessages([ ...messages, newMessage])
         // start sending in chunks
@@ -29,7 +31,7 @@ const FileShare = ({ dataChannel } : { dataChannel: RTCDataChannel}) => {
           dataChannel.send(JSON.stringify(newMessage))
         }
 
-        sendFileChunks(files[0], dataChannel);
+        sendFileChunks(files[0], dataChannel, setProgress);
 
       }
     };
