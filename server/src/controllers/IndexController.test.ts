@@ -1,12 +1,28 @@
-import request from "supertest";
-import { app } from "../app";
+import { Test } from "supertest";
+import * as supertest from 'supertest';
+import IndexController from "./IndexController";
+import TestAgent from "supertest/lib/agent";
+import TestServer from "./shared/TestServer.test";
+import { StatusCodes } from "http-status-codes";
 
 describe('Test Index Controller', () => {
-  it('Request Ping should return Pong!', async () => {
-    const result = await request(app).get('/').send();
+  const indexController = new IndexController();
+  let agent: TestAgent<Test>;
 
-    expect(result.status).toBe(200);
-    expect(result.body.data).toBe("Hello from the Server Side!");
+  beforeAll(done => {
+    const server = new TestServer();
+    server.setController(indexController);
+    agent = supertest.agent(server.getExpressInstance());
+    done();
+  })
+
+  it('Request main route!', async (done) => {
+    agent.get(`/`).end((err, res) => {
+      expect(res.status).toBe(StatusCodes.OK);
+      expect(res.body.data).toBe("Hello from the Server Side!");
+      done();
+    })
+
   })
 })
 
