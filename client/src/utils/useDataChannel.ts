@@ -1,5 +1,5 @@
-import { FileMetadata, MessageEnum, MessageI, ShareStatusEnum, messageAtom, progressAtom, remoteUsernameAtom } from "@/state/atoms";
-import { useAtom, useAtomValue } from "jotai";
+import { FileMetadata, MessageEnum, MessageI, ShareStatusEnum, fileDataAtom, messageAtom, progressAtom, remoteUsernameAtom } from "@/state/atoms";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef } from "react";
 import { saveFile } from "./helper";
 
@@ -9,6 +9,7 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
   const remoteUsername = useAtomValue(remoteUsernameAtom);
   const [progress, setProgress] = useAtom(progressAtom);
   const dataChannel = useRef(null as unknown as RTCDataChannel);
+  const setFileData = useSetAtom(fileDataAtom);
 
   const messageR = useRef<MessageI[]>([]);
   const remoteUsernameRef = useRef('');
@@ -48,10 +49,11 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
               if (data.shareStatus === ShareStatusEnum.START && data.fileMetadata) {
                 currentFile = [];
                 fileMetadata = data.fileMetadata;
+                currentFileSize = 0;
                 setMessages([ ...messageR.current, data ]);
               }
               if (data.shareStatus === ShareStatusEnum.END && fileMetadata) {
-                saveFile(currentFile, fileMetadata);
+                setFileData({fileMetadata, currentFile})
               }
             }
           } catch (err) {

@@ -46,6 +46,11 @@ export interface MessageI {
   fileMetadata?: FileMetadata;
 }
 
+export interface FileData {
+  fileMetadata: FileMetadata,
+  currentFile: string[]
+}
+
 export const defaultWsData = {
   success: false,
   error: false,
@@ -61,3 +66,4 @@ export const streamAtom = atom(null as unknown as MediaStream);
 export const mediaAtom = atom({ audio: true, video: true });
 export const messageAtom = atom([] as MessageI[]);
 export const progressAtom = atom(0);
+export const fileDataAtom = atom(null as unknown as FileData);

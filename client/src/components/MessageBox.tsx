@@ -1,7 +1,9 @@
-import { FileMetadata, MessageEnum, progressAtom } from "@/state/atoms";
+import { FileMetadata, MessageEnum, fileDataAtom, progressAtom, usernameAtom } from "@/state/atoms";
 import Avatar from "./Avatar";
 import { Progress } from "./ui/progress";
 import { useAtomValue } from "jotai";
+import { Download } from "lucide-react";
+import { saveFile } from "@/utils/helper";
 
 
 export const ChatBubble = ({ id, name, type, message, fileMetadata, showProgress 
@@ -17,7 +19,7 @@ export const ChatBubble = ({ id, name, type, message, fileMetadata, showProgress
          { type === MessageEnum.MESSAGE? 
          <p className="text-sm font-normal text-gray-900 dark:text-white">{message}</p>
          :
-         (fileMetadata && <FileSend fileMetadata={fileMetadata} showProgress={showProgress} />)
+         (fileMetadata && <FileSend fileMetadata={fileMetadata} showProgress={showProgress} name={name} />)
          }
       </div>
     {/* <button id="dropdownMenuIconButton" data-dropdown-toggle="dropdownDots" data-dropdown-placement="bottom-start" className="inline-flex self-center items-center p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none dark:text-white focus:ring-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-gray-600" type="button">
@@ -49,20 +51,31 @@ export const ChatBubble = ({ id, name, type, message, fileMetadata, showProgress
 }
 
 
-export const FileSend = ({ fileMetadata, showProgress } : { fileMetadata: FileMetadata, showProgress: boolean }) => {
+export const FileSend = ({ fileMetadata, showProgress, name } : { fileMetadata: FileMetadata, showProgress: boolean, name: string }) => {
    const progress = useAtomValue(progressAtom);
+   const fileData = useAtomValue(fileDataAtom);
+   const username = useAtomValue(usernameAtom);
+   const receiver = username !== name;
    const sizeInKb = fileMetadata.size / 1024
    const sizeValue = sizeInKb < 1024 ? sizeInKb : (sizeInKb / 1024);
    const unit = sizeInKb < 1024 ? 'Kb' : 'Mb';
    const size = `${sizeValue} ${unit}`;
 
+   const downloadFile = () => {
+      saveFile(fileData.currentFile, fileData.fileMetadata);
+   }
+
    return <div>
       <p className="text-sm font-normal text-gray-900 dark:text-white">{fileMetadata.name}</p>
       <p className="text-sm font-normal text-gray-900 dark:text-white">{size}</p>
-      {showProgress && <>
-         <Progress value={progress} />
-         {progress} %
-      </>}
+      <div className='flex flex-col'>
+         {showProgress && <div className="flex gap-2 justify-between">
+            <Progress value={progress} className="w-[80%]" />
+            <div>{progress} %</div>
+         </div>}
+         {receiver && progress===100 && <button onClick={downloadFile}><Download /></button>}
+      </div>
+
    </div>
 }
 
