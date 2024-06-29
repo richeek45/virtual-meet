@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { getMediaStream, handleMessage, isValidJSON } from "./helper";
 import { useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
@@ -49,8 +49,9 @@ const useWebSocket = ({ port } : { port: number}) => {
   const [_, setLoggedIn] = useAtom(loggedInAtom);
   const usernameRef = useRef(username);
   const remoteUsernameRef = useRef(remoteUsername);
+  const [connection, setConnection] = useState(localConnection.current);
 
-  const { dataChannel } = useDataChannel(localConnection);
+  const { dataChannel } = useDataChannel(connection);
 
   useEffect(() => {
     usernameRef.current = username;
@@ -61,6 +62,7 @@ const useWebSocket = ({ port } : { port: number}) => {
     const ws = new WebSocket(ENV_VARIABLES.WEBSOCKET);
     const rtcConnection = new RTCPeerConnection();
     localConnection.current = rtcConnection;
+    setConnection(rtcConnection);
 
 
     rtcConnection.onicecandidate = (event) => {

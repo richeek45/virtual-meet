@@ -4,7 +4,7 @@ import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { saveFile } from "./helper";
 
 
-const useDataChannel = (localConnection: MutableRefObject<RTCPeerConnection | null>) => {
+const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
   const [messages, setMessages] = useAtom(messageAtom);
   const remoteUsername = useAtomValue(remoteUsernameAtom);
   const [progress, setProgress] = useAtom(progressAtom);
@@ -12,7 +12,6 @@ const useDataChannel = (localConnection: MutableRefObject<RTCPeerConnection | nu
   const setFileData = useSetAtom(fileDataAtom);
   const messageR = useRef<MessageI[]>([]);
   const remoteUsernameRef = useRef('');
-  const [connection, setConnection] = useState(localConnection.current);
 
   useEffect(() => {
     messageR.current = messages;
@@ -20,7 +19,6 @@ const useDataChannel = (localConnection: MutableRefObject<RTCPeerConnection | nu
   }, [messages, remoteUsername])
 
   useEffect(() => {
-    const rtcPeerConnection = localConnection.current;
     console.log(rtcPeerConnection, 'test');
     if (rtcPeerConnection) {
       const dataChannelOptions = { ordered: true };
@@ -87,7 +85,7 @@ const useDataChannel = (localConnection: MutableRefObject<RTCPeerConnection | nu
     }
   }, [])
 
-  console.log(dataChannel.current, connection, 'outside');
+  console.log(dataChannel.current, rtcPeerConnection, 'outside');
   return {  dataChannel: dataChannel.current };
 }
 
