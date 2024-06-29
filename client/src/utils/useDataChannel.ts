@@ -1,6 +1,6 @@
 import { FileMetadata, MessageEnum, MessageI, ShareStatusEnum, fileDataAtom, messageAtom, progressAtom, remoteUsernameAtom } from "@/state/atoms";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { MutableRefObject, useEffect, useRef } from "react";
+import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { saveFile } from "./helper";
 
 
@@ -10,9 +10,9 @@ const useDataChannel = (localConnection: MutableRefObject<RTCPeerConnection | nu
   const [progress, setProgress] = useAtom(progressAtom);
   const dataChannel = useRef(null as unknown as RTCDataChannel);
   const setFileData = useSetAtom(fileDataAtom);
-
   const messageR = useRef<MessageI[]>([]);
   const remoteUsernameRef = useRef('');
+  const [connection, setConnection] = useState(localConnection.current);
 
   useEffect(() => {
     messageR.current = messages;
@@ -20,7 +20,7 @@ const useDataChannel = (localConnection: MutableRefObject<RTCPeerConnection | nu
   }, [messages, remoteUsername])
 
   useEffect(() => {
-    const rtcPeerConnection = localConnection.current;
+    const rtcPeerConnection = connection;
     console.log(rtcPeerConnection, 'test');
     if (rtcPeerConnection) {
       const dataChannelOptions = { ordered: true };
@@ -85,9 +85,9 @@ const useDataChannel = (localConnection: MutableRefObject<RTCPeerConnection | nu
       }
   
     }
-  }, [localConnection.current])
+  }, [connection])
 
-  console.log(dataChannel.current, localConnection, 'outside');
+  console.log(dataChannel.current, connection, 'outside');
   return {  dataChannel: dataChannel.current };
 }
 
