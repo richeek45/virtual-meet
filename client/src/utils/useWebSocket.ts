@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { usernameAtom, wsDataAtom, defaultWsData, MESSAGE_TYPES, loggedInAtom, remoteUsernameAtom } from "@/state/atoms";
 import useDataChannel from "./useDataChannel";
+import { ENV_VARIABLES } from "@/env";
 
 export const sendMessage = (conn: WebSocket, user: string, message: object) => {
   conn.send(JSON.stringify({
@@ -57,7 +58,7 @@ const useWebSocket = ({ port } : { port: number}) => {
   }, [username, remoteUsername])
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:${port}`);
+    const ws = new WebSocket(ENV_VARIABLES.WEBSOCKET);
     const rtcConnection = new RTCPeerConnection();
     localConnection.current = rtcConnection;
 

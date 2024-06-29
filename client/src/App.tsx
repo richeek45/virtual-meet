@@ -37,7 +37,7 @@ function App() {
   const [username, setUsername] = useAtom(usernameAtom);
   const [remoteUsername, setRemoteUsername] = useAtom(remoteUsernameAtom);
   const loggedIn = useAtomValue(loggedInAtom);
-  const { connection, localConnection, videoRef, remoteVideoRef, dataChannel } = useWebSocket({port: 8080});
+  const { connection, localConnection, videoRef, remoteVideoRef, dataChannel } = useWebSocket({port: 8081 });
   const [stream, setStream] = useAtom(streamAtom);
   const [mediaToggle, setMediaToggle] = useAtom(mediaAtom); 
   const [messages, setMessages] = useAtom(messageAtom);
