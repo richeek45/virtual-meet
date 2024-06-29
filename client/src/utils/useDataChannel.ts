@@ -83,7 +83,7 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
       }
   
     }
-  }, [])
+  }, [rtcPeerConnection])
 
   console.log(dataChannel.current, rtcPeerConnection, 'outside');
   return {  dataChannel: dataChannel.current };
