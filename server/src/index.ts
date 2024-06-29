@@ -2,7 +2,7 @@ import App from './app';
 import Jasmine from 'jasmine';
 // import Logger from 'jet-logger';
 
-const port = 8080;
+const port = 8081;
 
 if (process.argv[2] !== 'test') {
     const server = new App();
