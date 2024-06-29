@@ -20,7 +20,7 @@ const useDataChannel = (localConnection: MutableRefObject<RTCPeerConnection | nu
   }, [messages, remoteUsername])
 
   useEffect(() => {
-    const rtcPeerConnection = connection;
+    const rtcPeerConnection = localConnection.current;
     console.log(rtcPeerConnection, 'test');
     if (rtcPeerConnection) {
       const dataChannelOptions = { ordered: true };
@@ -85,7 +85,7 @@ const useDataChannel = (localConnection: MutableRefObject<RTCPeerConnection | nu
       }
   
     }
-  }, [connection])
+  }, [])
 
   console.log(dataChannel.current, connection, 'outside');
   return {  dataChannel: dataChannel.current };
