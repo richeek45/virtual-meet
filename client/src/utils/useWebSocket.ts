@@ -50,7 +50,7 @@ const useWebSocket = ({ port } : { port: number}) => {
   const usernameRef = useRef(username);
   const remoteUsernameRef = useRef(remoteUsername);
 
-  const { dataChannel } = useDataChannel(localConnection.current);
+  const { dataChannel } = useDataChannel(localConnection);
 
   useEffect(() => {
     usernameRef.current = username;
