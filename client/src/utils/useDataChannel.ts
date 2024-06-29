@@ -85,7 +85,7 @@ const useDataChannel = (localConnection: MutableRefObject<RTCPeerConnection | nu
       }
   
     }
-  }, [localConnection])
+  }, [localConnection.current])
 
   console.log(dataChannel.current, localConnection, 'outside');
   return {  dataChannel: dataChannel.current };
