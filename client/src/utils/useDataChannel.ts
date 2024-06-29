@@ -19,7 +19,6 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
   }, [messages, remoteUsername])
 
   useEffect(() => {
-    console.log(rtcPeerConnection, 'test');
     if (rtcPeerConnection) {
       const dataChannelOptions = { ordered: true };
       let currentFile: string[] = []; // store the received chunks
@@ -27,7 +26,6 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
       let currentFileSize = 0;
 
       dataChannel.current = rtcPeerConnection.createDataChannel("chat", dataChannelOptions);
-      console.log(dataChannel.current, 'datachannel');
       rtcPeerConnection.ondatachannel = (event) => {
         const channel = event.channel;
     
@@ -85,7 +83,6 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
     }
   }, [rtcPeerConnection])
 
-  console.log(dataChannel.current, rtcPeerConnection, 'outside');
   return {  dataChannel: dataChannel.current };
 }
 

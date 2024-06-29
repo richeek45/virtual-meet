@@ -23,7 +23,6 @@ export const setUpPeerConnection = async (
   const stream = await getMediaStream(video, constraints)
 
   stream.getTracks().forEach((track) => {
-    console.log('getting tracked ')
     rtcPeerConnection.addTrack(track, stream);
   })
 
@@ -66,7 +65,6 @@ const useWebSocket = ({ port } : { port: number}) => {
 
 
     rtcConnection.onicecandidate = (event) => {
-      console.log('ice candidate', remoteUsernameRef.current);
       if (event.candidate) {
         sendMessage(ws, remoteUsernameRef.current, {
           type: MESSAGE_TYPES.ICE_CANDIDATE,

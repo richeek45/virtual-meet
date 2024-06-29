@@ -46,9 +46,7 @@ function App() {
 
   useEffect(() => {
     if (messageRef.current) {
-      console.log('getting here', messageRef.current)
         messageRef.current.scrollTo(0, messageRef.current.scrollHeight);
-        // messageRef.current.scrollIntoView({ behavior: "smooth", block: "end" })
       }
   }, [messages]);
 
@@ -91,7 +89,6 @@ function App() {
   }
 
   const handleAudioToggle = () => {
-    console.log('audio toggled = ', mediaToggle.audio)
     stream.getAudioTracks().forEach((track: { enabled: boolean; }) => {
       track.enabled = !track.enabled
       setMediaToggle({ audio: track.enabled, video: mediaToggle.video });
@@ -104,7 +101,6 @@ function App() {
       const newMessage = {id: lastId + 1, user: username, type: MessageEnum.MESSAGE, message: messageSend };
       dataChannel.send(JSON.stringify(newMessage));
       setMessages([ ...messages, newMessage]);
-      console.log(newMessage);
     }
   }
 
