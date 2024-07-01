@@ -8,7 +8,7 @@ import { saveFile } from "@/utils/helper";
 
 export const ChatBubble = ({ id, name, type, message, fileMetadata, showProgress 
 }: { 
-   id: number, name: string, type: MessageEnum, message: string, fileMetadata?: FileMetadata, showProgress: boolean 
+   id: number, name: string, type: MessageEnum, message: string, fileMetadata?: FileMetadata, showProgress: boolean
 }) => {
 
    return (
@@ -52,7 +52,7 @@ export const ChatBubble = ({ id, name, type, message, fileMetadata, showProgress
 
 
 export const FileSend = ({ fileMetadata, showProgress, name } : { fileMetadata: FileMetadata, showProgress: boolean, name: string }) => {
-   const progress = useAtomValue(progressAtom);
+   const {progress} = useAtomValue(progressAtom);
    const fileData = useAtomValue(fileDataAtom);
    const username = useAtomValue(usernameAtom);
    const receiver = username !== name;

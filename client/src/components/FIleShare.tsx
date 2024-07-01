@@ -31,7 +31,7 @@ const FileShare = ({ dataChannel } : { dataChannel: RTCDataChannel}) => {
           dataChannel.send(JSON.stringify(newMessage))
         }
 
-        sendFileChunks(files[0], dataChannel, setProgress);
+        sendFileChunks(files[0], dataChannel, newMessage.id, setProgress);
 
       }
     };

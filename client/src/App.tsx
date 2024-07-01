@@ -2,7 +2,7 @@ import { Input } from './components/ui/input';
 import useWebSocket, { sendMessage, setUpPeerConnection } from './utils/useWebSocket';
 import { Button } from './components/ui/button';
 import './App.css';
-import { MESSAGE_TYPES, MessageEnum, loggedInAtom, mediaAtom, messageAtom, remoteUsernameAtom, streamAtom, usernameAtom } from './state/atoms';
+import { MESSAGE_TYPES, MessageEnum, loggedInAtom, mediaAtom, messageAtom, progressAtom, remoteUsernameAtom, streamAtom, usernameAtom } from './state/atoms';
 import { useAtom, useAtomValue } from 'jotai';
 import { LogIn, Mic, MicOff, Paperclip, Phone, SendHorizontal, Video, VideoOff } from 'lucide-react';
 import { getMediaStream } from './utils/helper';
@@ -43,6 +43,7 @@ function App() {
   const [messages, setMessages] = useAtom(messageAtom);
   const [messageSend, setMessageSend] = useState('');
   const messageRef = useRef<HTMLDivElement | null>(null);
+  const { id } = useAtomValue(progressAtom);
 
   useEffect(() => {
     if (messageRef.current) {
@@ -189,15 +190,14 @@ function App() {
         <div id="message" ref={messageRef} className='h-[90%] border-2 border-black rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
           Message Rendering Box
           {messages.map(data => {
-            const lastId = messages[messages.length - 1]?.id ?? 0;
-            const showProgress = lastId === data.id;
+            const showProgress = data.type === MessageEnum.FILE && data.id === id;
             return <ChatBubble 
               key={data.id} name={data.user} 
               type={data.type} 
               message={data.message ?? ''} 
               id={data.id} 
               fileMetadata={data.fileMetadata} 
-              showProgress={showProgress} 
+              showProgress={showProgress}
             />
           })}
         </div>

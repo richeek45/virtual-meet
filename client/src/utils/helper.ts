@@ -129,7 +129,7 @@ const arrayBufferToBase64 = (buffer: Buffer) => {
 
  
 const CHUNK_SIZE=16000;
-export const sendFileChunks = (file: File, dataChannel: RTCDataChannel, setProgress: (val: number) => void) => {
+export const sendFileChunks = (file: File, dataChannel: RTCDataChannel, id: number, setProgress: (val: {id: number, progress: number}) => void) => {
   const reader = new FileReader();
 
   reader.onloadend = (event) => {
@@ -147,7 +147,7 @@ export const sendFileChunks = (file: File, dataChannel: RTCDataChannel, setProgr
 
         if (buffer) {
           const progress = Math.floor((end / file.size) * 100);
-          setProgress(progress);
+          setProgress({ id, progress });
 
           const base64Chunk =  arrayBufferToBase64(buffer.slice(start, end) as Buffer);
           dataChannel.send(base64Chunk);

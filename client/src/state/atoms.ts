@@ -58,6 +58,11 @@ export const defaultWsData = {
   message: "not connected"
 }
 
+export interface ProgressI {
+  id: number | null,
+  progress: number;
+}
+
 export const usernameAtom = atom('');
 export const remoteUsernameAtom = atom('');
 export const wsDataAtom = atom({} as WsDataI);
@@ -65,5 +70,5 @@ export const loggedInAtom = atom(false);
 export const streamAtom = atom(null as unknown as MediaStream);
 export const mediaAtom = atom({ audio: true, video: true });
 export const messageAtom = atom([] as MessageI[]);
-export const progressAtom = atom(0);
+export const progressAtom = atom<ProgressI>({id: null, progress: 0});
 export const fileDataAtom = atom(null as unknown as FileData);

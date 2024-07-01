@@ -24,6 +24,7 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
       let currentFile: string[] = []; // store the received chunks
       let fileMetadata: FileMetadata | null = null;
       let currentFileSize = 0;
+      let lastMessage: MessageI | null = null;
 
       dataChannel.current = rtcPeerConnection.createDataChannel("chat", dataChannelOptions);
       rtcPeerConnection.ondatachannel = (event) => {
@@ -45,6 +46,7 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
             }
             if (data.type === MessageEnum.FILE) {
               // receive file in chunks and add progress bar
+              lastMessage = data;
               if (data.shareStatus === ShareStatusEnum.START && data.fileMetadata) {
                 currentFile = [];
                 fileMetadata = data.fileMetadata;
@@ -64,7 +66,9 @@ const useDataChannel = (rtcPeerConnection: RTCPeerConnection | null) => {
               if (fileMetadata) {
                 currentFileSize += currentFile[currentFile.length - 1].length;
                 const progress = Math.floor((currentFileSize/fileMetadata.size) * 100);
-                setProgress(progress);
+                if (lastMessage?.id) {
+                  setProgress({ progress, id: lastMessage.id});
+                }
               }
             }
           }
