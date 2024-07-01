@@ -147,6 +147,7 @@ function App() {
       }
     }
   }
+  console.log(videoRef.current?.srcObject, remoteVideoRef.current?.srcObject)
 
   return (
     <div className='flex justify-between h-screen p-10 gap-10'>

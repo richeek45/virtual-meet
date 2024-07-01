@@ -23,6 +23,7 @@ export const setUpPeerConnection = async (
   const stream = await getMediaStream(video, constraints)
 
   stream.getTracks().forEach((track) => {
+    console.log('local tracks', track);
     rtcPeerConnection.addTrack(track, stream);
   })
 
@@ -59,8 +60,18 @@ const useWebSocket = ({ port } : { port: number}) => {
   }, [username, remoteUsername])
 
   useEffect(() => {
+    const configuration = {
+      iceServers:[
+          {
+              urls:[
+                'stun:stun.l.google.com:19302',
+                'stun:stun1.l.google.com:19302'
+              ]
+          }
+      ]
+  }
     const ws = new WebSocket(ENV_VARIABLES.WEBSOCKET);
-    const rtcConnection = new RTCPeerConnection();
+    const rtcConnection = new RTCPeerConnection(configuration);
     localConnection.current = rtcConnection;
     setConnection(rtcConnection);
 
