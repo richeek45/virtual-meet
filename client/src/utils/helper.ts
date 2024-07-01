@@ -76,7 +76,7 @@ export const handleMessage = (
   setRemoteUsername: (val: string)  => void
 ) => {
   console.log(data);
-  console.log(conn, rtcPeerConnection);
+  console.log(rtcPeerConnection);
   
   switch(data.type) {
     case MESSAGE_TYPES.LOGIN: {
