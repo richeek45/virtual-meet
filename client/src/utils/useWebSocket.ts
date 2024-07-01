@@ -82,7 +82,7 @@ const useWebSocket = ({ port } : { port: number}) => {
       // message.data can be string or JSON -> message is a event
       const data = isValidJSON(message?.data) ? JSON.parse(message?.data) : message?.data;
       if (localConnection.current && videoRef.current && remoteVideoRef.current) {
-        handleMessage(ws, data, localConnection.current, setWsData, setLoggedIn, videoRef.current, remoteVideoRef.current, setRemoteUsername); 
+        handleMessage(ws, data, rtcConnection, setWsData, setLoggedIn, videoRef.current, remoteVideoRef.current, setRemoteUsername); 
       }
     }
 
