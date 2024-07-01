@@ -29,7 +29,7 @@ export const setUpPeerConnection = async (
   // rendering other streams on video
   rtcPeerConnection.addEventListener('track', (event) => {
     const [remoteStream] = event.streams;
-    console.log(remoteStream, 'getting tracks')
+    console.log(remoteStream, remoteVideo, 'getting tracks')
     if (remoteVideo) {      
       remoteVideo.srcObject = remoteStream;
     }
