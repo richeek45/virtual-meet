@@ -5,6 +5,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { usernameAtom, wsDataAtom, defaultWsData, MESSAGE_TYPES, loggedInAtom, remoteUsernameAtom } from "@/state/atoms";
 import useDataChannel from "./useDataChannel";
 import { ENV_VARIABLES } from "@/env";
+import { stunServerList, turnServerList } from "./serverList";
 
 export const sendMessage = (conn: WebSocket, user: string, message: object) => {
   conn.send(JSON.stringify({
@@ -60,16 +61,16 @@ const useWebSocket = ({ port } : { port: number}) => {
   }, [username, remoteUsername])
 
   useEffect(() => {
-    const configuration = {
-      iceServers:[
-          {
-              urls:[
-                'stun:stun.l.google.com:19302',
-                'stun:stun1.l.google.com:19302'
-              ]
-          }
-      ]
-  }
+    const configuration = { 
+      iceServers:[{
+        urls: turnServerList,
+          username: ENV_VARIABLES.TURN_USERNAME,
+          credential: ENV_VARIABLES.TURN_CREDENTIAL
+         },
+         {urls: stunServerList}
+      ],
+      iceCandidatePoolSize: 10
+    }
     const ws = new WebSocket(ENV_VARIABLES.WEBSOCKET);
     const rtcConnection = new RTCPeerConnection(configuration);
     localConnection.current = rtcConnection;
