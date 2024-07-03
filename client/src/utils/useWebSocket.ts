@@ -103,30 +103,7 @@ const useWebSocket = ({ port } : { port: number}) => {
   }, [username, remoteUsername])
 
   useEffect(() => {
-    const configuration = { 
-      iceServers:[
-        // { urls: turnServerList,
-        //   username: ENV_VARIABLES.TURN_USERNAME,
-        //   credential: ENV_VARIABLES.TURN_CREDENTIAL
-        // },
-        {urls: stunServerList}
-      ],
-      iceCandidatePoolSize: 10
-    }
     const ws = new WebSocket(ENV_VARIABLES.WEBSOCKET);
-    // const rtcConnection = new RTCPeerConnection(configuration);
-    // localConnection.current = rtcConnection;
-    // setConnection(rtcConnection);
-
-
-    // rtcConnection.onicecandidate = (event) => {
-    //   if (event.candidate) {
-    //     sendMessage(ws, remoteUsernameRef.current, {
-    //       type: MESSAGE_TYPES.ICE_CANDIDATE,
-    //       candidate: event.candidate
-    //     })
-    //   }
-    // }
 
     ws.onopen = () => {
       console.log('Websocket connection is eshtablished!!');
