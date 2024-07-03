@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
-import { getMediaStream, handleMessage, isValidJSON } from "./helper";
+import { getMediaStream, handleMessage, isValidJSON, onLogin } from "./helper";
 import { useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
-import { usernameAtom, wsDataAtom, defaultWsData, MESSAGE_TYPES, loggedInAtom, remoteUsernameAtom } from "@/state/atoms";
+import { usernameAtom, wsDataAtom, defaultWsData, MESSAGE_TYPES, loggedInAtom, remoteUsernameAtom, streamAtom } from "@/state/atoms";
 import useDataChannel from "./useDataChannel";
 import { ENV_VARIABLES } from "@/env";
 import { stunServerList, turnServerList } from "./serverList";
@@ -24,14 +24,13 @@ export const setUpPeerConnection = async (
   const stream = await getMediaStream(video, constraints)
 
   stream.getTracks().forEach((track) => {
-    console.log('local tracks', track);
     rtcPeerConnection.addTrack(track, stream);
   })
 
   // rendering other streams on video
   rtcPeerConnection.addEventListener('track', (event) => {
     const [remoteStream] = event.streams;
-    console.log(remoteStream, remoteVideo, 'getting tracks')
+    console.log(remoteStream, 'getting tracks')
     if (remoteVideo) {      
       remoteVideo.srcObject = remoteStream;
       video.classList.replace('w-full', 'w-[50%]');
@@ -47,15 +46,56 @@ const useWebSocket = ({ port } : { port: number}) => {
   const [wsData, setWsData] = useAtom(wsDataAtom);
   const username = useAtomValue(usernameAtom);
   const [remoteUsername, setRemoteUsername] = useAtom(remoteUsernameAtom);
-  const localConnection = useRef<RTCPeerConnection | null>(null);
+  const rtcPeerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const [_, setLoggedIn] = useAtom(loggedInAtom);
+  const [stream, setStream] = useAtom(streamAtom);
   const usernameRef = useRef(username);
   const remoteUsernameRef = useRef(remoteUsername);
-  const [connection, setConnection] = useState(localConnection.current);
+  const [connection, setConnection] = useState(rtcPeerConnectionRef.current);
 
   const { dataChannel } = useDataChannel(connection);
+
+  const setLocalConnection = (val: RTCPeerConnection | null) => {
+    rtcPeerConnectionRef.current = val;
+  }
+
+
+  const handleConnect = async () => {
+    const connection = websocket.current;
+
+    const configuration = { 
+      iceServers:[
+        // { urls: turnServerList,
+        //   username: ENV_VARIABLES.TURN_USERNAME,
+        //   credential: ENV_VARIABLES.TURN_CREDENTIAL
+        // },
+        {urls: stunServerList}
+      ],
+      iceCandidatePoolSize: 10
+    }
+
+    const rtcPeerConnection = new RTCPeerConnection(configuration);
+    rtcPeerConnectionRef.current = rtcPeerConnection;
+    setConnection(rtcPeerConnection);
+
+    rtcPeerConnection.onicecandidate = (event) => {
+      if (event.candidate && websocket.current) {
+        sendMessage(websocket.current, remoteUsernameRef.current, {
+          type: MESSAGE_TYPES.ICE_CANDIDATE,
+          candidate: event.candidate
+        })
+      }
+    }
+
+    if (videoRef.current && remoteVideoRef.current && connection) {
+      const stream = await setUpPeerConnection({video: true, audio: true }, rtcPeerConnection, videoRef.current, remoteVideoRef.current);
+      setStream(stream);
+    } 
+
+  }
+
 
   useEffect(() => {
     usernameRef.current = username;
@@ -64,29 +104,29 @@ const useWebSocket = ({ port } : { port: number}) => {
 
   useEffect(() => {
     const configuration = { 
-      iceServers:[{
-        urls: turnServerList,
-          username: ENV_VARIABLES.TURN_USERNAME,
-          credential: ENV_VARIABLES.TURN_CREDENTIAL
-         },
-         {urls: stunServerList}
+      iceServers:[
+        // { urls: turnServerList,
+        //   username: ENV_VARIABLES.TURN_USERNAME,
+        //   credential: ENV_VARIABLES.TURN_CREDENTIAL
+        // },
+        {urls: stunServerList}
       ],
       iceCandidatePoolSize: 10
     }
     const ws = new WebSocket(ENV_VARIABLES.WEBSOCKET);
-    const rtcConnection = new RTCPeerConnection(configuration);
-    localConnection.current = rtcConnection;
-    setConnection(rtcConnection);
+    // const rtcConnection = new RTCPeerConnection(configuration);
+    // localConnection.current = rtcConnection;
+    // setConnection(rtcConnection);
 
 
-    rtcConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        sendMessage(ws, remoteUsernameRef.current, {
-          type: MESSAGE_TYPES.ICE_CANDIDATE,
-          candidate: event.candidate
-        })
-      }
-    }
+    // rtcConnection.onicecandidate = (event) => {
+    //   if (event.candidate) {
+    //     sendMessage(ws, remoteUsernameRef.current, {
+    //       type: MESSAGE_TYPES.ICE_CANDIDATE,
+    //       candidate: event.candidate
+    //     })
+    //   }
+    // }
 
     ws.onopen = () => {
       console.log('Websocket connection is eshtablished!!');
@@ -96,8 +136,11 @@ const useWebSocket = ({ port } : { port: number}) => {
     ws.onmessage = (message) => {
       // message.data can be string or JSON -> message is a event
       const data = isValidJSON(message?.data) ? JSON.parse(message?.data) : message?.data;
-      if (localConnection.current && videoRef.current && remoteVideoRef.current) {
-        handleMessage(ws, data, rtcConnection, setWsData, setLoggedIn, videoRef.current, remoteVideoRef.current, setRemoteUsername); 
+      if (data.type === MESSAGE_TYPES.LOGIN) {
+        onLogin(data, setWsData, setLoggedIn);
+      }
+      if (rtcPeerConnectionRef.current && videoRef.current && remoteVideoRef.current) {
+        handleMessage(ws, data, rtcPeerConnectionRef.current, videoRef.current, remoteVideoRef.current, setRemoteUsername); 
       }
     }
 
@@ -111,12 +154,20 @@ const useWebSocket = ({ port } : { port: number}) => {
 
     return () => {
       ws.close();
-      localConnection.current = null;
+      rtcPeerConnectionRef.current = null;
     }
   }, [])
 
 
-  return {connection: websocket.current, localConnection: localConnection.current, videoRef, remoteVideoRef, dataChannel }
+  return { 
+    connection: websocket.current,
+    localConnection: rtcPeerConnectionRef.current, 
+    handleConnect, 
+    setLocalConnection, 
+    videoRef, 
+    remoteVideoRef, 
+    dataChannel
+  }
 }
 
 export default useWebSocket;

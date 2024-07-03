@@ -37,7 +37,7 @@ function App() {
   const [username, setUsername] = useAtom(usernameAtom);
   const [remoteUsername, setRemoteUsername] = useAtom(remoteUsernameAtom);
   const loggedIn = useAtomValue(loggedInAtom);
-  const { connection, localConnection, videoRef, remoteVideoRef, dataChannel } = useWebSocket({port: 8081 });
+  const { connection, localConnection, setLocalConnection, handleConnect, videoRef, remoteVideoRef, dataChannel } = useWebSocket({port: 8081 });
   const [stream, setStream] = useAtom(streamAtom);
   const [mediaToggle, setMediaToggle] = useAtom(mediaAtom); 
   const [messages, setMessages] = useAtom(messageAtom);
@@ -61,12 +61,6 @@ function App() {
     }
   }
 
-  const handleConnect = async () => {
-    if (videoRef.current && remoteVideoRef.current && connection && localConnection) {
-      const stream = await setUpPeerConnection({video: true, audio: true }, localConnection, videoRef.current, remoteVideoRef.current);
-      setStream(stream);
-    } 
-  }
 
   const handleJoin = async () => {
     if (localConnection && connection) {
@@ -78,13 +72,15 @@ function App() {
 
   const handleEndCall = () => {
     if (localConnection && connection && videoRef.current && remoteVideoRef.current) {
-      sendMessage(connection, remoteUsername, { type: MESSAGE_TYPES.LEAVE });
+      sendMessage(connection, username, { type: MESSAGE_TYPES.LEAVE });
       videoRef.current.srcObject = null;
       remoteVideoRef.current.srcObject = null;
       localConnection.close();
       localConnection.onicecandidate = null;
+      setLocalConnection(null);
       setRemoteUsername('');
       removeTracks(stream);
+      setStream(null as unknown as MediaStream);
       // end with a message for ending the call!
       // back to homesceen
     }
