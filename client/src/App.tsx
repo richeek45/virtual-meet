@@ -63,7 +63,7 @@ function App() {
 
   const handleConnect = async () => {
     if (videoRef.current && remoteVideoRef.current && connection && localConnection) {
-      const stream = await setUpPeerConnection({video: true,audio: true }, localConnection, videoRef.current, remoteVideoRef.current);
+      const stream = await setUpPeerConnection({video: true, audio: true }, localConnection, videoRef.current, remoteVideoRef.current);
       setStream(stream);
     } 
   }
@@ -167,7 +167,7 @@ function App() {
         </div>
         
         <div className='flex justify-between h-[80%] w-[100%] border-slate-400 border-2 rounded-md'>
-          <video id='local' className='h-full w-full object-cover' ref={videoRef} autoPlay></video>
+          <video id='local' className='h-full w-full object-cover' muted={true} ref={videoRef} autoPlay></video>
           <div>
             <video id='remote' className='h-full object-cover hidden' ref={remoteVideoRef} autoPlay></video>
           </div>
