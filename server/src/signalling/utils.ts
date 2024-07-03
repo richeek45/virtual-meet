@@ -53,12 +53,12 @@ export const handleIceCandidate = (conn: WebSocket, user: string, data: object) 
 }
 
 export const handleEndConnection = (conn: WebSocket, user: string, data: object) => {
-  const remoteConn = connections[user];
+  Object.keys(connections).forEach(connUser => {
+    if (connUser !== user) {
+      sendMessageClient(connections[connUser], data);
+    }
+  })
 
-  if (remoteConn !== null)  {
-    sendMessageClient(remoteConn, data);
-    delete connections[user];
-  }
 } 
 
 

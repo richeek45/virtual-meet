@@ -60,7 +60,7 @@ export const onEndCall = (
 ) => {
   // video.srcObject = null;
   remoteVideo.srcObject = null;
-  rtcPeerConnection.close();
+  // rtcPeerConnection.close();
   rtcPeerConnection.onicecandidate = null;
   setRemoteUsername('');
 }
@@ -69,20 +69,13 @@ export const handleMessage = (
   conn: WebSocket, 
   data: WsDataI, 
   rtcPeerConnection: RTCPeerConnection, 
-  setWsData: (val: WsDataI) => void,
-  setLoggedIn: (val: boolean)  => void,
   video: HTMLVideoElement,
   remoteVideo: HTMLVideoElement,
   setRemoteUsername: (val: string)  => void
 ) => {
   console.log(data);
-  // console.log(rtcPeerConnection);
   
   switch(data.type) {
-    case MESSAGE_TYPES.LOGIN: {
-      onLogin(data, setWsData, setLoggedIn);
-      break;
-    }
     case MESSAGE_TYPES.OFFER: {
       onOfferReceived(conn, data, rtcPeerConnection, setRemoteUsername);
       break;
