@@ -11,25 +11,25 @@ import { ChatBubble } from './components/MessageBox';
 import Avatar from './components/Avatar';
 import FileShare from './components/FIleShare';
 
-const iconStyle = `hover:cursor-pointer p-1 border-2 border-slate-300 rounded-md shadow-lg drop-shadow-md bg-white`;
+const iconStyle = `hover:cursor-pointer w-12 h-12 rounded-full p-2 border-2 border-slate-300 shadow-lg drop-shadow-md bg-white`;
 const inputStyle = `flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`
 
 const VideoBtn = ({ videoEnabled, handleVideoToggle} : {videoEnabled: boolean, handleVideoToggle: () => void}) => {
 
   if (videoEnabled) {
-    return <Video onClick={handleVideoToggle} size={40} strokeWidth={1.5} className={iconStyle} />
+    return <Video onClick={handleVideoToggle} size={30} strokeWidth={1.5} className={iconStyle} />
   }
 
-  return  <VideoOff onClick={handleVideoToggle} size={40} strokeWidth={1.5} className={iconStyle} />;
+  return  <VideoOff onClick={handleVideoToggle} size={30} strokeWidth={1.5} className={iconStyle} />;
 }
 
 const AudioBtn = ({ audioEnabled, handleAudioToggle} : { audioEnabled: boolean, handleAudioToggle: () => void }) => {
 
   if (audioEnabled) {
-    return <Mic onClick={handleAudioToggle} size={40} className={iconStyle} />
+    return <Mic onClick={handleAudioToggle} size={30} className={iconStyle} />
   }
 
-  return <MicOff onClick={handleAudioToggle} size={40} className={iconStyle} />;
+  return <MicOff onClick={handleAudioToggle} size={30} className={iconStyle} />;
 }
 
 
@@ -146,62 +146,67 @@ function App() {
   }
 
   return (
-    <div className='flex justify-between h-screen p-10 gap-10 w-full'>
-      <div className='flex flex-col gap-2 w-full'>
-
-        <div className='flex gap-4 w-full justify-around'>
-          <div className='flex gap-4'>
-            <Input disabled={loggedIn} type='text' placeholder="Enter your name..." value={username} onChange={(e) => setUsername(e.target.value)} />
-            <Button  className='border-2' onClick={handleLogin} ><LogIn /></Button>
-            <Button onClick={handleConnect} ><Video /></Button>
-          </div>
-          <div className='flex w-2/6 gap-4'>
-            <Input type='text' placeholder="Enter other user's name..." value={remoteUsername} onChange={(e) => setRemoteUsername(e.target.value)} />
-            <Button onClick={handleJoin} >Connect</Button>
-          </div>
-            <div>{loggedIn && <><Avatar name={username} /></>}</div>
+    <div className='flex flex-col h-screen gap-4 p-5 w-full'>
+      <div className='flex gap-4 w-full justify-around'>
+        <div className='flex gap-4'>
+          <Input disabled={loggedIn} type='text' placeholder="Enter your name..." value={username} onChange={(e) => setUsername(e.target.value)} />
+          <Button  className='border-2' onClick={handleLogin} ><LogIn /></Button>
+          <Button onClick={handleConnect} ><Video /></Button>
         </div>
-        
-        <div className='flex justify-between h-[80%] w-[100%] border-slate-400 border-2 rounded-md'>
-          <video id='local' className='h-full w-full object-cover' muted={true} ref={videoRef} autoPlay></video>
-          <div>
-            <video id='remote' className='h-full object-cover hidden' ref={remoteVideoRef} autoPlay></video>
+        <div className='flex w-2/6 gap-4'>
+          <Input type='text' placeholder="Enter other user's name..." value={remoteUsername} onChange={(e) => setRemoteUsername(e.target.value)} />
+          <Button onClick={handleJoin} >Connect</Button>
+        </div>
+          <div>{loggedIn && <><Avatar name={username} /></>}</div>
+      </div>
+      
+      <div className='flex w-full h-full gap-4 justify-between min-h-0'>
+  
+        <div className='flex flex-col gap-2 w-full'>
+          <div className='flex justify-between h-[80%] w-full border-slate-300 border-2 rounded-xl'>
+              <video id='local' className='w-full h-full object-cover' muted={true} ref={videoRef} autoPlay></video>
+            <div>
+              <video id='remote' className='h-full object-cover hidden' ref={remoteVideoRef} autoPlay></video>
+            </div>
+          </div>
+
+          <div className='h-14 flex justify-center border-slate-300 drop-shadow-md'>
+            <div className='flex justify-center items-center shadow-lg bg-slate-200 w-2/3 gap-4'>
+              <VideoBtn handleVideoToggle={handleVideoToggle} videoEnabled={mediaToggle.video} />
+              <AudioBtn handleAudioToggle={handleAudioToggle} audioEnabled={mediaToggle.audio} />
+              <Button className={`hover:bg-red-600 h-12 w-12 rounded-full p-2 bg-white`}>
+                <Phone onClick={handleEndCall} size={40} fill='white' strokeWidth='1.1' stroke='black'  />
+              </Button>
+            </div>
           </div>
         </div>
 
-        <div className='h-12 flex justify-center border-slate-500 drop-shadow-md'>
-          <div className='flex justify-center items-center shadow-lg bg-slate-200 w-2/3 gap-4'>
-            <VideoBtn handleVideoToggle={handleVideoToggle} videoEnabled={mediaToggle.video} />
-            <AudioBtn handleAudioToggle={handleAudioToggle} audioEnabled={mediaToggle.audio} />
-            <Phone onClick={handleEndCall} size={40} fill='white' strokeWidth='1.1' className={`${iconStyle} bg-red-500 `} />
+        <div className='flex flex-col border-solid border-slate-300 border-2 drop-shadow-md rounded-md p-6 gap-2 w-[30%] h-[90%]'>
+          Messages
+          <div id="message" ref={messageRef} className='h-[90%]  border-2 border-slate-300 rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
+            {messages.map(data => {
+              const showProgress = data.type === MessageEnum.FILE && data.id === id;
+              return <ChatBubble 
+                key={data.id} name={data.user} 
+                type={data.type} 
+                message={data.message ?? ''} 
+                id={data.id} 
+                fileMetadata={data.fileMetadata} 
+                showProgress={showProgress}
+              />
+            })}
+          </div>
+          <div className={`flex drop-shadow-md ${inputStyle}`}>
+            <input value={messageSend} className='outline-none w-[70%]' placeholder='Send a message' onChange={(event) => setMessageSend(event.target.value)} />
+            <div className='flex justify-center items-center'>
+              <FileShare dataChannel={dataChannel} />
+              <Button variant='ghost' size='sm' onClick={handleSendMessage}><SendHorizontal size={30} /></Button>
+            </div>
           </div>
         </div>
 
       </div>
 
-      <div className='flex flex-col border-solid border-slate-300 border-2 drop-shadow-md rounded-md p-6 gap-2'>
-        Messages
-        <div id="message" ref={messageRef} className='h-[90%] border-2 border-slate-300 rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
-          {messages.map(data => {
-            const showProgress = data.type === MessageEnum.FILE && data.id === id;
-            return <ChatBubble 
-              key={data.id} name={data.user} 
-              type={data.type} 
-              message={data.message ?? ''} 
-              id={data.id} 
-              fileMetadata={data.fileMetadata} 
-              showProgress={showProgress}
-            />
-          })}
-        </div>
-        <div className={`flex drop-shadow-md ${inputStyle}`}>
-          <input value={messageSend} className='outline-none w-[70%]' placeholder='Send a message' onChange={(event) => setMessageSend(event.target.value)} />
-          <div className='flex justify-center items-center'>
-            <FileShare dataChannel={dataChannel} />
-            <Button variant='ghost' size='sm' onClick={handleSendMessage}><SendHorizontal size={30} /></Button>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
