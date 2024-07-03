@@ -201,3 +201,8 @@ export const saveFile = (base64FileData: string[], metadata: FileMetadata) => {
   link.download = metadata.name;
   link.click();
 }
+
+export const removeTracks = (stream: MediaStream) => {
+  const tracks = stream.getTracks();
+  tracks.forEach(track => track.stop());
+}

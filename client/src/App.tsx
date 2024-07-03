@@ -5,7 +5,7 @@ import './App.css';
 import { MESSAGE_TYPES, MessageEnum, loggedInAtom, mediaAtom, messageAtom, progressAtom, remoteUsernameAtom, streamAtom, usernameAtom } from './state/atoms';
 import { useAtom, useAtomValue } from 'jotai';
 import { LogIn, Mic, MicOff, Paperclip, Phone, SendHorizontal, Video, VideoOff } from 'lucide-react';
-import { getMediaStream } from './utils/helper';
+import { getMediaStream, removeTracks } from './utils/helper';
 import { useEffect, useRef, useState } from 'react';
 import { ChatBubble } from './components/MessageBox';
 import Avatar from './components/Avatar';
@@ -84,6 +84,7 @@ function App() {
       localConnection.close();
       localConnection.onicecandidate = null;
       setRemoteUsername('');
+      removeTracks(stream);
       // end with a message for ending the call!
       // back to homesceen
     }
@@ -102,6 +103,7 @@ function App() {
       const newMessage = {id: lastId + 1, user: username, type: MessageEnum.MESSAGE, message: messageSend };
       dataChannel.send(JSON.stringify(newMessage));
       setMessages([ ...messages, newMessage]);
+      setMessageSend('');
     }
   }
 
@@ -128,8 +130,7 @@ function App() {
           track.enabled = !track.enabled;
         });
   
-        const tracks = stream.getTracks();
-        tracks.forEach(track => track.stop());
+        removeTracks(stream);
 
         setMediaToggle({ video: false, audio: mediaToggle.audio });
 
@@ -147,11 +148,10 @@ function App() {
       }
     }
   }
-  console.log(videoRef.current?.srcObject, remoteVideoRef.current?.srcObject)
 
   return (
-    <div className='flex justify-between h-screen p-10 gap-10'>
-      <div className='flex flex-col gap-2'>
+    <div className='flex justify-between h-screen p-10 gap-10 w-full'>
+      <div className='flex flex-col gap-2 w-full'>
 
         <div className='flex gap-4 w-full justify-around'>
           <div className='flex w-2/6 gap-4'>
@@ -166,12 +166,10 @@ function App() {
           </div>
         </div>
         
-        <div className='flex justify-between h-[80%] border-black border-2'>
+        <div className='flex justify-between h-[80%] w-[100%] border-black border-2'>
+          <video id='local' className='h-full w-full object-cover' ref={videoRef} autoPlay></video>
           <div>
-            <video id='local' className='h-full object-cover' ref={videoRef} autoPlay></video>
-          </div>
-          <div>
-            <video id='remote' className='h-full object-cover' ref={remoteVideoRef} autoPlay></video>
+            <video id='remote' className='h-full object-cover hidden' ref={remoteVideoRef} autoPlay></video>
           </div>
         </div>
 
@@ -185,8 +183,7 @@ function App() {
 
       </div>
 
-
-      <div className='flex flex-col w-[45%] border-solid border-black border-2 rounded-md p-6 gap-2'>
+      <div className='flex flex-col border-solid border-black border-2 rounded-md p-6 gap-2'>
         Messages
         <div id="message" ref={messageRef} className='h-[90%] border-2 border-black rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
           Message Rendering Box
@@ -203,7 +200,7 @@ function App() {
           })}
         </div>
         <div className={`flex drop-shadow-md ${inputStyle}`}>
-          <input className='outline-none w-[70%]' placeholder='Send a message' onChange={(event) => setMessageSend(event.target.value)} />
+          <input value={messageSend} className='outline-none w-[70%]' placeholder='Send a message' onChange={(event) => setMessageSend(event.target.value)} />
           <div className='flex justify-center items-center'>
             <FileShare dataChannel={dataChannel} />
             <Button variant='ghost' size='sm' onClick={handleSendMessage}><SendHorizontal size={30} /></Button>

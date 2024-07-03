@@ -34,6 +34,8 @@ export const setUpPeerConnection = async (
     console.log(remoteStream, remoteVideo, 'getting tracks')
     if (remoteVideo) {      
       remoteVideo.srcObject = remoteStream;
+      video.classList.replace('w-full', 'w-[50%]');
+      remoteVideo.classList.replace('hidden', 'block');
     }
   })
 
