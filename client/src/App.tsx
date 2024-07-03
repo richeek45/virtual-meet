@@ -154,26 +154,26 @@ function App() {
       <div className='flex flex-col gap-2 w-full'>
 
         <div className='flex gap-4 w-full justify-around'>
-          <div className='flex w-2/6 gap-4'>
-            <Input type='text' placeholder="Enter your name..." value={username} onChange={(e) => setUsername(e.target.value)} />
+          <div className='flex gap-4'>
+            <Input disabled={loggedIn} type='text' placeholder="Enter your name..." value={username} onChange={(e) => setUsername(e.target.value)} />
             <Button  className='border-2' onClick={handleLogin} ><LogIn /></Button>
-            {loggedIn && <><Avatar name={username} /><p>{username}</p></>}
-            <Button onClick={handleConnect} >Connect</Button>
+            <Button onClick={handleConnect} ><Video /></Button>
           </div>
           <div className='flex w-2/6 gap-4'>
             <Input type='text' placeholder="Enter other user's name..." value={remoteUsername} onChange={(e) => setRemoteUsername(e.target.value)} />
             <Button onClick={handleJoin} >Connect</Button>
           </div>
+            <div>{loggedIn && <><Avatar name={username} /></>}</div>
         </div>
         
-        <div className='flex justify-between h-[80%] w-[100%] border-black border-2'>
+        <div className='flex justify-between h-[80%] w-[100%] border-slate-400 border-2 rounded-md'>
           <video id='local' className='h-full w-full object-cover' ref={videoRef} autoPlay></video>
           <div>
             <video id='remote' className='h-full object-cover hidden' ref={remoteVideoRef} autoPlay></video>
           </div>
         </div>
 
-        <div className='border-black border-2 h-12 flex justify-center'>
+        <div className='h-12 flex justify-center border-slate-500 drop-shadow-md'>
           <div className='flex justify-center items-center shadow-lg bg-slate-200 w-2/3 gap-4'>
             <VideoBtn handleVideoToggle={handleVideoToggle} videoEnabled={mediaToggle.video} />
             <AudioBtn handleAudioToggle={handleAudioToggle} audioEnabled={mediaToggle.audio} />
@@ -183,10 +183,9 @@ function App() {
 
       </div>
 
-      <div className='flex flex-col border-solid border-black border-2 rounded-md p-6 gap-2'>
+      <div className='flex flex-col border-solid border-slate-300 border-2 drop-shadow-md rounded-md p-6 gap-2'>
         Messages
-        <div id="message" ref={messageRef} className='h-[90%] border-2 border-black rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
-          Message Rendering Box
+        <div id="message" ref={messageRef} className='h-[90%] border-2 border-slate-300 rounded-sm overflow-scroll scrollbar-hide flex flex-col gap-2'>
           {messages.map(data => {
             const showProgress = data.type === MessageEnum.FILE && data.id === id;
             return <ChatBubble 
