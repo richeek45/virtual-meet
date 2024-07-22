@@ -1,6 +1,6 @@
 # virtual-meet
 
+[![Watch the video]](https://youtu.be/zim9tUx9dQM)
 Detailed Linkedin Post: [WebRTC Application](https://www.linkedin.com/feed/update/urn:li:activity:7214539127218716675/
 )
-[![Watch the video](http://i3.ytimg.com/vi/zim9tUx9dQM/hqdefault.jpg)](https://youtu.be/zim9tUx9dQM)
 
